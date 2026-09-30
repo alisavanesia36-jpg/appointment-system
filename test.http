@@ -1,0 +1,1140 @@
+POST http://localhost:8080/users
+Content-Type: application/json
+
+{
+  "username":"张三",
+  "password":"123456",
+  "phone":"13800138000"
+}
+
+
+###
+
+GET http://localhost:8080/users
+
+
+
+###
+
+GET http://localhost:8080/users/1
+
+###
+
+DELETE http://localhost:8080/users/1
+
+###
+
+PUT http://localhost:8080/users/2
+Content-Type: application/json
+
+{
+  "username": "李四",
+  "password": "654321",
+  "phone": "13900000000"
+}
+
+###
+POST http://localhost:8080/services
+Content-Type: application/json
+
+{
+  "name": "洗剪吹",
+  "duration": 60,
+  "price": 58
+}
+
+###
+GET http://localhost:8080/services
+
+###
+GET http://localhost:8080/services/1
+
+###
+PUT http://localhost:8080/services/1
+Content-Type: application/json
+
+{
+  "name": "高级洗剪吹",
+  "duration": 90,
+  "price": 88
+}
+
+###
+GET http://localhost:8080/services/1
+
+###
+DELETE http://localhost:8080/services/3
+
+### 新增预约
+POST http://localhost:8080/appointments
+Content-Type: application/json
+
+### 查询所有预约
+GET http://localhost:8080/appointments
+
+### 查询单个预约
+GET http://localhost:8080/appointments/1
+
+### 删除预约
+DELETE http://localhost:8080/appointments/3
+
+### 查询所有预约
+GET http://localhost:8080/appointments
+
+### 新增预约
+POST http://localhost:8080/appointments
+Content-Type: application/json
+
+{
+  "userId": 1,
+  "serviceId": 1,
+  "appointmentTime": "2026-10-01T14:00:00",
+  "status": "待确认"
+}
+
+### 修改预约
+PUT http://localhost:8080/appointments/5
+Content-Type: application/json
+
+{
+  "userId": 4,
+  "serviceId": 1,
+  "appointmentTime": "2026-10-01T15:00:00",
+  "status": "已确认"
+}
+
+### 查询修改后的预约
+GET http://localhost:8080/appointments/5
+
+### 测试重复预约
+POST http://localhost:8080/appointments
+Content-Type: application/json
+
+{
+  "userId": 1,
+  "serviceId": 1,
+  "appointmentTime": "2026-10-01T15:00:00",
+  "status": "待确认"
+}
+
+### 创建第二个预约
+POST http://localhost:8080/appointments
+Content-Type: application/json
+
+{
+  "userId": 1,
+  "serviceId": 1,
+  "appointmentTime": "2026-10-01T16:00:00",
+  "status": "待确认"
+}
+
+### 测试修改时的时间冲突
+PUT http://localhost:8080/appointments/6
+Content-Type: application/json
+
+{
+  "userId": 1,
+  "serviceId": 1,
+  "appointmentTime": "2026-10-01T15:00:00",
+  "status": "已确认"
+}
+
+### 新增预约
+POST http://localhost:8080/appointments
+Content-Type: application/json
+
+{
+  "userId": 1,
+  "serviceId": 1,
+  "appointmentTime": "2026-10-02T14:00:00",
+  "status": "PENDING"
+}
+
+### 修改预约状态
+PUT http://localhost:8080/appointments/5
+Content-Type: application/json
+
+{
+  "userId": 1,
+  "serviceId": 1,
+  "appointmentTime": "2026-10-02T14:00:00",
+  "status": "CONFIRMED"
+}
+
+### 修改预约状态为已取消
+PUT http://localhost:8080/appointments/5
+Content-Type: application/json
+
+{
+  "userId": 4,
+  "serviceId": 1,
+  "appointmentTime": "2026-10-01T15:00:00",
+  "status": "CANCELLED"
+}
+
+### 取消 id=5 的预约
+PUT http://localhost:8080/appointments/5
+Content-Type: application/json
+
+{
+  "userId": 4,
+  "serviceId": 1,
+  "appointmentTime": "2026-10-01T15:00:00",
+  "status": "CANCELLED"
+}
+
+### 重新预约已经取消的时间
+POST http://localhost:8080/appointments
+Content-Type: application/json
+
+{
+  "userId": 1,
+  "serviceId": 1,
+  "appointmentTime": "2026-10-01T15:00:00",
+  "status": "PENDING"
+}
+
+### 确认预约
+
+PUT http://localhost:8080/appointments/8/confirm
+
+###
+GET http://localhost:8080/appointments/8
+
+### 查询所有预约
+
+GET http://localhost:8080/appointments
+
+###
+PUT http://localhost:8080/appointments/8/cancel
+
+### 完成预约
+
+PUT http://localhost:8080/appointments/8/complete
+
+### 查询所有预约
+
+GET http://localhost:8080/appointments
+
+### 测试 PENDING 不能完成
+
+PUT http://localhost:8080/appointments/7/complete
+
+### 创建测试预约
+
+POST http://localhost:8080/appointments
+Content-Type: application/json
+
+{
+  "userId": 1,
+  "serviceId": 1,
+  "appointmentTime": "2026-10-02T14:00:00",
+  "status": "PENDING"
+}
+
+### 创建测试预约
+
+POST http://localhost:8080/appointments
+Content-Type: application/json
+
+{
+  "userId": 1,
+  "serviceId": 1,
+  "appointmentTime": "2026-10-02T16:00:00",
+  "status": "PENDING"
+}
+
+### 确认测试预约
+
+PUT http://localhost:8080/appointments/9/confirm
+
+### 完成测试预约
+
+PUT http://localhost:8080/appointments/9/complete
+
+### 查询用户的所有预约
+
+GET http://localhost:8080/appointments/user/2
+
+### 查询用户1的未完成预约
+GET http://localhost:8080/appointments/user/1/unfinished
+
+### 查询所有待确认预约
+GET http://localhost:8080/appointments/status/PENDING
+
+###
+PUT http://localhost:8080/appointments/5/confirm
+
+###
+PUT http://localhost:8080/appointments/9/cancel
+
+### 查询所有预约
+
+GET http://localhost:8080/appointments
+
+### 创建测试预约
+
+POST http://localhost:8080/appointments
+Content-Type: application/json
+
+{
+  "userId": 1,
+  "serviceId": 1,
+  "appointmentTime": "2026-10-02T18:00:00",
+  "status": "CONFIRMED"
+}
+
+###
+PUT http://localhost:8080/appointments/10/complete
+
+###
+PUT http://localhost:8080/appointments/8/complete
+
+### 查询2026年10月2日的所有预约
+GET http://localhost:8080/appointments/time-range?start=2026-10-02T00:00:00&end=2026-10-02T23:59:59
+
+### 新增员工
+POST http://localhost:8080/staff
+Content-Type: application/json
+
+{
+  "name": "张师傅",
+  "phone": "13800138000"
+}
+
+### 查询所有员工
+GET http://localhost:8080/staff
+
+### 查询指定员工
+GET http://localhost:8080/staff/1
+
+### 删除员工
+DELETE http://localhost:8080/staff/1
+
+###
+GET http://localhost:8080/staff
+
+### 给员工添加服务技能
+POST http://localhost:8080/staff-services/1/1
+
+### 创建员工
+POST http://localhost:8080/staff
+Content-Type: application/json
+
+{
+  "name": "张师傅",
+  "phone": "13800138000"
+}
+
+### 查询员工
+GET http://localhost:8080/staff
+
+### 给张师傅添加服务技能
+POST http://localhost:8080/staff-services/2/1
+
+### 查询所有员工技能
+GET http://localhost:8080/staff-services
+
+### 查询张师傅会哪些服务
+GET http://localhost:8080/staff-services/staff/2
+
+### 查询张师傅会哪些服务
+GET http://localhost:8080/staff-services/staff/2
+
+### 查询服务1有哪些员工可以做
+GET http://localhost:8080/staff-services/service/1
+
+### 测试指定员工预约
+POST http://localhost:8080/appointments
+Content-Type: application/json
+
+{
+  "userId": 1,
+  "serviceId": 1,
+  "staffId": 2,
+  "appointmentTime": "2026-10-05T10:00:00",
+  "status": "PENDING"
+}
+
+### 测试同员工同时间不能重复预约
+POST http://localhost:8080/appointments
+Content-Type: application/json
+
+{
+  "userId": 1,
+  "serviceId": 1,
+  "staffId": 2,
+  "appointmentTime": "2026-10-05T10:00:00",
+  "status": "PENDING"
+}
+
+### 测试员工时间冲突
+POST http://localhost:8080/appointments
+Content-Type: application/json
+
+{
+  "userId": 1,
+  "serviceId": 1,
+  "staffId": 2,
+  "appointmentTime": "2026-10-05T10:00:00",
+  "status": "PENDING"
+}
+
+### 创建第二个员工
+POST http://localhost:8080/staff
+Content-Type: application/json
+
+{
+  "name": "李师傅",
+  "phone": "13900139000"
+}
+
+### 测试不同员工可以同时预约
+POST http://localhost:8080/appointments
+Content-Type: application/json
+
+{
+  "userId": 1,
+  "serviceId": 1,
+  "staffId": 3,
+  "appointmentTime": "2026-10-05T10:00:00",
+  "status": "PENDING"
+}
+
+### 测试时间重叠
+POST http://localhost:8080/appointments
+Content-Type: application/json
+
+{
+  "userId": 1,
+  "serviceId": 1,
+  "staffId": 2,
+  "appointmentTime": "2026-10-05T10:30:00",
+  "status": "PENDING"
+}
+
+### 测试修改预约时的时间冲突
+PUT http://localhost:8080/appointments/12
+Content-Type: application/json
+
+{
+  "userId": 1,
+  "serviceId": 1,
+  "staffId": 2,
+  "appointmentTime": "2026-10-05T10:30:00",
+  "status": "PENDING"
+}
+
+### 测试员工是否会这个服务
+POST http://localhost:8080/appointments
+Content-Type: application/json
+
+{
+  "userId": 1,
+  "serviceId": 1,
+  "staffId": 3,
+  "appointmentTime": "2026-10-06T10:00:00",
+  "status": "PENDING"
+}
+
+### 测试修改预约时员工服务能力检查
+PUT http://localhost:8080/appointments/12
+Content-Type: application/json
+
+{
+  "userId": 1,
+  "serviceId": 1,
+  "staffId": 3,
+  "appointmentTime": "2026-10-06T10:00:00",
+  "status": "PENDING"
+}
+### 测试营业时间
+POST http://localhost:8080/appointments
+Content-Type: application/json
+
+{
+  "userId": 1,
+  "serviceId": 1,
+  "staffId": 2,
+  "appointmentTime": "2026-10-07T17:00:00",
+  "status": "PENDING"
+}
+
+### 测试修改预约的营业时间
+PUT http://localhost:8080/appointments/12
+Content-Type: application/json
+
+{
+  "userId": 1,
+  "serviceId": 1,
+  "staffId": 2,
+  "appointmentTime": "2026-10-07T17:00:00",
+  "status": "PENDING"
+}
+
+### 测试过去的预约时间
+POST http://localhost:8080/appointments
+Content-Type: application/json
+
+{
+  "userId": 1,
+  "serviceId": 1,
+  "staffId": 2,
+  "appointmentTime": "2026-01-01T10:00:00",
+  "status": "PENDING"
+}
+
+### 测试修改预约为过去时间
+PUT http://localhost:8080/appointments/11
+Content-Type: application/json
+
+{
+  "userId": 1,
+  "serviceId": 1,
+  "staffId": 2,
+  "appointmentTime": "2026-01-01T10:00:00",
+  "status": "PENDING"
+}
+
+### 测试不存在的用户
+POST http://localhost:8080/appointments
+Content-Type: application/json
+
+{
+  "userId": 9999,
+  "serviceId": 1,
+  "staffId": 2,
+  "appointmentTime": "2026-10-10T10:00:00",
+  "status": "PENDING"
+}
+
+### 测试不存在的服务
+POST http://localhost:8080/appointments
+Content-Type: application/json
+
+{
+  "userId": 1,
+  "serviceId": 9999,
+  "staffId": 2,
+  "appointmentTime": "2026-10-10T10:00:00",
+  "status": "PENDING"
+}
+
+### 测试不存在的服务
+POST http://localhost:8080/appointments
+Content-Type: application/json
+
+{
+  "userId": 1,
+  "serviceId": 9999,
+  "staffId": 2,
+  "appointmentTime": "2026-10-10T10:00:00",
+  "status": "PENDING"
+}
+
+###
+GET http://localhost:8080/users
+
+### 测试不存在的服务
+POST http://localhost:8080/appointments
+Content-Type: application/json
+
+{
+  "userId": 2,
+  "serviceId": 9999,
+  "staffId": 2,
+  "appointmentTime": "2026-10-10T10:00:00",
+  "status": "PENDING"
+}
+
+### 测试不存在的服务
+POST http://localhost:8080/appointments
+Content-Type: application/json
+
+{
+  "userId": 2,
+  "serviceId": 9999,
+  "staffId": 2,
+  "appointmentTime": "2026-10-10T10:00:00",
+  "status": "PENDING"
+}
+
+### 测试不存在的员工
+POST http://localhost:8080/appointments
+Content-Type: application/json
+
+{
+  "userId": 2,
+  "serviceId": 1,
+  "staffId": 9999,
+  "appointmentTime": "2026-10-10T10:00:00",
+  "status": "PENDING"
+}
+
+### 查询所有预约
+GET http://localhost:8080/appointments
+
+### 测试修改为不存在的员工
+PUT http://localhost:8080/appointments/11
+Content-Type: application/json
+
+{
+  "userId": 2,
+  "serviceId": 1,
+  "staffId": 9999,
+  "appointmentTime": "2026-10-10T10:00:00",
+  "status": "PENDING"
+}
+
+###
+PUT http://localhost:8080/appointments/11
+Content-Type: application/json
+
+{
+  "userId": 2,
+  "serviceId": 1,
+  "staffId": 9999,
+  "appointmentTime": "2026-10-10T10:00:00",
+  "status": "PENDING"
+}
+
+### 测试全局异常处理
+PUT http://localhost:8080/appointments/11
+Content-Type: application/json
+
+{
+  "userId": 2,
+  "serviceId": 1,
+  "staffId": 9999,
+  "appointmentTime": "2026-10-10T10:00:00",
+  "status": "PENDING"
+}
+
+### 测试员工不存在
+PUT http://localhost:8080/appointments/11
+Content-Type: application/json
+
+{
+  "userId": 2,
+  "serviceId": 1,
+  "staffId": 9999,
+  "appointmentTime": "2026-10-10T10:00:00",
+  "status": "PENDING"
+}
+
+### 查询用户2未完成的预约
+GET http://localhost:8080/appointments/user/2/unfinished
+
+### 测试不存在的预约
+PUT http://localhost:8080/appointments/99999
+Content-Type: application/json
+
+{
+  "userId": 2,
+  "serviceId": 1,
+  "staffId": 2,
+  "appointmentTime": "2026-10-10T10:00:00",
+  "status": "PENDING"
+}
+
+### 测试确认不存在的预约
+PUT http://localhost:8080/appointments/99999/confirm
+
+### 测试取消不存在的预约
+PUT http://localhost:8080/appointments/99999/cancel
+
+### 测试完成不存在的预约
+PUT http://localhost:8080/appointments/99999/complete
+
+### 测试创建预约：用户不存在
+POST http://localhost:8080/appointments
+Content-Type: application/json
+
+{
+  "userId": 99999,
+  "serviceId": 1,
+  "staffId": 2,
+  "appointmentTime": "2026-10-10T10:00:00",
+  "status": "PENDING"
+}
+
+### 测试创建预约：服务不存在
+POST http://localhost:8080/appointments
+Content-Type: application/json
+
+{
+  "userId": 2,
+  "serviceId": 99999,
+  "staffId": 2,
+  "appointmentTime": "2026-10-10T10:00:00",
+  "status": "PENDING"
+}
+
+### 测试创建预约：员工不存在
+POST http://localhost:8080/appointments
+Content-Type: application/json
+
+{
+  "userId": 2,
+  "serviceId": 1,
+  "staffId": 99999,
+  "appointmentTime": "2026-10-10T10:00:00",
+  "status": "PENDING"
+}
+
+### 测试员工不会做这个服务
+POST http://localhost:8080/appointments
+Content-Type: application/json
+
+{
+  "userId": 2,
+  "serviceId": 1,
+  "staffId": 3,
+  "appointmentTime": "2026-10-10T10:00:00",
+  "status": "PENDING"
+}
+
+### 测试预约时间冲突
+POST http://localhost:8080/appointments
+Content-Type: application/json
+
+{
+  "userId": 2,
+  "serviceId": 1,
+  "staffId": 2,
+  "appointmentTime": "2026-10-10T10:00:00",
+  "status": "PENDING"
+}
+
+### 测试同一员工同一时间再次预约
+POST http://localhost:8080/appointments
+Content-Type: application/json
+
+{
+  "userId": 2,
+  "serviceId": 1,
+  "staffId": 2,
+  "appointmentTime": "2026-10-10T10:00:00",
+  "status": "PENDING"
+}
+
+### 测试查询不存在的预约
+GET http://localhost:8080/appointments/99999
+
+###
+GET http://localhost:8080/appointments/99999
+
+### 测试删除不存在的预约
+DELETE http://localhost:8080/appointments/99999
+
+### 查询所有预约
+GET http://localhost:8080/appointments
+
+### 查询存在的预约
+GET http://localhost:8080/appointments/13
+
+### 删除测试预约
+DELETE http://localhost:8080/appointments/13
+
+### 确认预约已删除
+GET http://localhost:8080/appointments/13
+
+### 查询当前用户
+GET http://localhost:8080/users
+
+### 查询当前员工
+GET http://localhost:8080/staff
+
+### 查询当前服务
+GET http://localhost:8080/services
+
+### 查询员工-服务绑定
+GET http://localhost:8080/staff-services
+
+### 查询所有预约
+GET http://localhost:8080/appointments
+
+### 创建正式测试预约
+POST http://localhost:8080/appointments
+Content-Type: application/json
+
+{
+  "userId": 2,
+  "serviceId": 1,
+  "staffId": 2,
+  "appointmentTime": "2026-10-10T10:00:00",
+  "status": "PENDING"
+}
+
+### 确认预约
+PUT http://localhost:8080/appointments/14/confirm
+
+### 完成预约
+PUT http://localhost:8080/appointments/14/complete
+
+### 创建第二条测试预约
+POST http://localhost:8080/appointments
+Content-Type: application/json
+
+{
+  "userId": 3,
+  "serviceId": 1,
+  "staffId": 2,
+  "appointmentTime": "2026-10-10T14:00:00",
+  "status": "PENDING"
+}
+
+### 取消预约
+PUT http://localhost:8080/appointments/15/cancel
+
+### 测试取消后再次确认
+PUT http://localhost:8080/appointments/15/confirm
+
+### 测试已完成预约不能取消
+PUT http://localhost:8080/appointments/14/cancel
+
+### 测试已完成预约不能再次完成
+PUT http://localhost:8080/appointments/14/complete
+
+### 测试预约时间重叠
+POST http://localhost:8080/appointments
+Content-Type: application/json
+
+{
+  "userId": 3,
+  "serviceId": 1,
+  "staffId": 2,
+  "appointmentTime": "2026-10-10T10:30:00",
+  "status": "PENDING"
+}
+
+### 测试预约时间刚好衔接
+POST http://localhost:8080/appointments
+Content-Type: application/json
+
+{
+  "userId": 3,
+  "serviceId": 1,
+  "staffId": 2,
+  "appointmentTime": "2026-10-10T11:30:00",
+  "status": "PENDING"
+}
+
+###
+GET http://localhost:8080/appointments
+
+###
+POST http://localhost:8080/appointments
+Content-Type: application/json
+
+{
+  "userId": 3,
+  "serviceId": 1,
+  "staffId": 2,
+  "appointmentTime": "2026-10-10T17:00:00",
+  "status": "PENDING"
+}
+
+###
+POST http://localhost:8080/appointments
+Content-Type: application/json
+
+{
+  "userId": 3,
+  "serviceId": 1,
+  "staffId": 2,
+  "appointmentTime": "2026-10-11T09:00:00",
+  "status": "PENDING"
+}
+
+###
+GET http://localhost:8080/appointments
+
+###
+POST http://localhost:8080/appointments
+Content-Type: application/json
+
+{
+  "userId": 3,
+  "serviceId": 1,
+  "staffId": 2,
+  "appointmentTime": "2026-09-01T10:00:00",
+  "status": "PENDING"
+}
+
+### 测试18:00开始的预约不能超过营业时间
+POST http://localhost:8080/appointments
+Content-Type: application/json
+
+{
+  "userId": 3,
+  "serviceId": 1,
+  "staffId": 2,
+  "appointmentTime": "2026-10-12T18:00:00",
+  "status": "PENDING"
+}
+
+### 测试预约正好在18:00结束
+POST http://localhost:8080/appointments
+Content-Type: application/json
+
+{
+  "userId": 3,
+  "serviceId": 1,
+  "staffId": 2,
+  "appointmentTime": "2026-10-12T16:30:00",
+  "status": "PENDING"
+}
+
+### 测试员工不提供该服务时不能预约
+POST http://localhost:8080/appointments
+Content-Type: application/json
+
+{
+  "userId": 3,
+  "serviceId": 1,
+  "staffId": 3,
+  "appointmentTime": "2026-10-13T10:00:00",
+  "status": "PENDING"
+}
+
+### 测试不存在的用户不能预约
+POST http://localhost:8080/appointments
+Content-Type: application/json
+
+{
+  "userId": 99999,
+  "serviceId": 1,
+  "staffId": 2,
+  "appointmentTime": "2026-10-13T10:00:00",
+  "status": "PENDING"
+}
+
+### 测试不存在的服务不能预约
+POST http://localhost:8080/appointments
+Content-Type: application/json
+
+{
+  "userId": 3,
+  "serviceId": 99999,
+  "staffId": 2,
+  "appointmentTime": "2026-10-13T10:00:00",
+  "status": "PENDING"
+}
+
+
+### 测试不存在的员工不能预约
+POST http://localhost:8080/appointments
+Content-Type: application/json
+
+{
+  "userId": 3,
+  "serviceId": 1,
+  "staffId": 99999,
+  "appointmentTime": "2026-10-13T10:00:00",
+  "status": "PENDING"
+}
+
+### 测试修改预约时间
+PUT http://localhost:8080/appointments/17
+Content-Type: application/json
+
+{
+  "userId": 3,
+  "serviceId": 1,
+  "staffId": 2,
+  "appointmentTime": "2026-10-11T10:00:00",
+  "status": "PENDING"
+}
+
+### 测试修改预约时发生时间冲突
+PUT http://localhost:8080/appointments/17
+Content-Type: application/json
+
+{
+  "userId": 3,
+  "serviceId": 1,
+  "staffId": 2,
+  "appointmentTime": "2026-10-10T10:30:00",
+  "status": "PENDING"
+}
+
+### 查询17号预约，确认修改失败后数据没有变化
+GET http://localhost:8080/appointments/17
+
+### 测试修改预约时员工不提供该服务
+PUT http://localhost:8080/appointments/17
+Content-Type: application/json
+
+{
+  "userId": 3,
+  "serviceId": 1,
+  "staffId": 3,
+  "appointmentTime": "2026-10-13T10:00:00",
+  "status": "PENDING"
+}
+
+### 测试修改预约时用户不存在
+PUT http://localhost:8080/appointments/17
+Content-Type: application/json
+
+{
+  "userId": 99999,
+  "serviceId": 1,
+  "staffId": 2,
+  "appointmentTime": "2026-10-13T10:00:00",
+  "status": "PENDING"
+}
+
+### 测试修改预约时服务不存在
+PUT http://localhost:8080/appointments/17
+Content-Type: application/json
+
+{
+  "userId": 3,
+  "serviceId": 99999,
+  "staffId": 2,
+  "appointmentTime": "2026-10-13T10:00:00",
+  "status": "PENDING"
+}
+
+### 确认修改失败后预约数据没有变化
+GET http://localhost:8080/appointments/17
+
+### 测试修改预约时不能改成过去时间
+PUT http://localhost:8080/appointments/17
+Content-Type: application/json
+
+{
+  "userId": 3,
+  "serviceId": 1,
+  "staffId": 2,
+  "appointmentTime": "2026-09-01T10:00:00",
+  "status": "PENDING"
+}
+
+### 测试修改预约时超过营业时间
+PUT http://localhost:8080/appointments/17
+Content-Type: application/json
+
+{
+  "userId": 3,
+  "serviceId": 1,
+  "staffId": 2,
+  "appointmentTime": "2026-10-13T17:00:00",
+  "status": "PENDING"
+}
+
+### 测试修改不存在的预约
+PUT http://localhost:8080/appointments/99999
+Content-Type: application/json
+
+{
+  "userId": 3,
+  "serviceId": 1,
+  "staffId": 2,
+  "appointmentTime": "2026-10-13T10:00:00",
+  "status": "PENDING"
+}
+
+### 测试参数校验
+POST http://localhost:8080/appointments
+Content-Type: application/json
+
+{
+  "userId": null,
+  "serviceId": null,
+  "staffId": null,
+  "appointmentTime": null,
+  "status": "PENDING"
+}
+
+### 测试参数校验优化
+POST http://localhost:8080/appointments
+Content-Type: application/json
+
+{
+  "userId": null,
+  "serviceId": null,
+  "staffId": null,
+  "appointmentTime": null,
+  "status": "PENDING"
+}
+
+### 测试业务异常统一返回
+POST http://localhost:8080/appointments
+Content-Type: application/json
+
+{
+  "userId": 3,
+  "serviceId": 1,
+  "staffId": 3,
+  "appointmentTime": "2026-10-13T10:00:00",
+  "status": "PENDING"
+}
+
+### 测试业务异常统一返回
+POST http://localhost:8080/appointments
+Content-Type: application/json
+
+{
+  "userId": 3,
+  "serviceId": 1,
+  "staffId": 3,
+  "appointmentTime": "2026-10-13T10:00:00",
+  "status": "PENDING"
+}
+
+### 创建预约测试
+POST http://localhost:8080/appointments
+Content-Type: application/json
+
+{
+  "userId": 1,
+  "serviceId": 1,
+  "staffId": 2,
+  "appointmentTime": "2026-10-15T10:00:00",
+  "status": "PENDING"
+}
+
+### 创建预约测试
+POST http://localhost:8080/appointments
+Content-Type: application/json
+
+{
+  "userId":4,
+  "serviceId":1,
+  "staffId":2,
+  "appointmentTime":"2026-10-15T10:00:00",
+  "status":"PENDING"
+}
+
+### 查询全部预约
+GET http://localhost:8080/appointments
+
+### 查询用户4的预约
+GET http://localhost:8080/appointments/user/4
+
+### 查询用户4未完成预约
+GET http://localhost:8080/appointments/user/4/unfinished
+
+### 确认预约
+PUT http://localhost:8080/appointments/19/confirm
+
+### 完成预约
+PUT http://localhost:8080/appointments/19/complete
+
+### 创建测试预约2
+POST http://localhost:8080/appointments
+Content-Type: application/json
+
+{
+  "userId":4,
+  "serviceId":1,
+  "staffId":2,
+  "appointmentTime":"2026-10-16T10:00:00",
+  "status":"PENDING"
+}
+
+### 测试非法完成预约(PENDING直接完成)
+PUT http://localhost:8080/appointments/20/complete
