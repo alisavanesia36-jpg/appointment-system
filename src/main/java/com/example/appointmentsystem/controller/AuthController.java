@@ -2,6 +2,8 @@ package com.example.appointmentsystem.controller;
 
 import com.example.appointmentsystem.dto.LoginDTO;
 import com.example.appointmentsystem.dto.LoginResponseDTO;
+import com.example.appointmentsystem.dto.UserCreateDTO;
+import com.example.appointmentsystem.entity.User;
 import com.example.appointmentsystem.service.AuthService;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -21,5 +23,10 @@ public class AuthController {
     @PostMapping("/login")
     public LoginResponseDTO login(@RequestBody LoginDTO dto) {
         return authService.login(dto.getUsername(), dto.getPassword());
+    }
+
+    @PostMapping("/register")
+    public User register(@RequestBody UserCreateDTO dto) {
+        return authService.register(dto);
     }
 }

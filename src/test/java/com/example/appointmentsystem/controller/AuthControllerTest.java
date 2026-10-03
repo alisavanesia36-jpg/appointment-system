@@ -58,7 +58,7 @@ class AuthControllerTest {
     }
 
     private void createUserViaApi(String username, String password, String phone) throws Exception {
-        mockMvc.perform(post("/users")
+        mockMvc.perform(post("/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"username\":\"" + username
                                 + "\",\"password\":\"" + password

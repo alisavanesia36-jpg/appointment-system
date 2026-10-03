@@ -43,7 +43,7 @@ class SecurityAuthenticationTest {
     void protectedEndpoint_withValidToken_returns200() throws Exception {
         String token = loginAndGetToken("auth_" + System.nanoTime(), "secret123");
 
-        mockMvc.perform(get("/users")
+        mockMvc.perform(get("/users/me")
                         .header("Authorization", "Bearer " + token))
                 .andExpect(status().isOk());
     }

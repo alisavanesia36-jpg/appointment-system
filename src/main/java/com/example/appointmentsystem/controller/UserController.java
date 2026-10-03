@@ -1,7 +1,10 @@
 package com.example.appointmentsystem.controller;
 
+import com.example.appointmentsystem.dto.UserAdminUpdateDTO;
 import com.example.appointmentsystem.dto.UserCreateDTO;
+import com.example.appointmentsystem.dto.UserUpdateDTO;
 import com.example.appointmentsystem.entity.User;
+import com.example.appointmentsystem.security.SecurityUtils;
 import com.example.appointmentsystem.service.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -13,55 +16,60 @@ import java.util.List;
 @RequestMapping("/users")
 public class UserController {
 
-
     private final UserService userService;
-
 
     public UserController(UserService userService) {
         this.userService = userService;
     }
 
-
-    // 新增用户
+    // 管理员创建用户
     @PostMapping
     public User create(@RequestBody UserCreateDTO dto) {
-        User user = new User();
-        user.setUsername(dto.getUsername());
-        user.setPassword(dto.getPassword());
-        user.setPhone(dto.getPhone());
-        // role 使用 User 实体默认值 "USER"
-        return userService.save(user);
+        return userService.createUser(dto);
     }
 
-
-    // 查询所有用户
+    // 查询所有用户（ADMIN）
     @GetMapping
     public List<User> findAll() {
         return userService.findAll();
     }
 
-
-    // 根据ID查询用户
-    @GetMapping("/{id}")
-    public User findById(@PathVariable Long id) {
-        return userService.findById(id)
-                .orElseThrow(() ->
-                        new ResponseStatusException(HttpStatus.NOT_FOUND, "用户不存在"));
+    // 查询当前登录用户
+    @GetMapping("/me")
+    public User me() {
+        return userService.findByUsername(SecurityUtils.getCurrentUsername());
     }
 
+    // 查询指定用户（本人或 ADMIN）
+    @GetMapping("/{id}")
+    public User findById(@PathVariable Long id) {
+        User target = userService.findById(id);
+        if (SecurityUtils.isAdmin()) {
+            return target;
+        }
+        User current = userService.findByUsername(SecurityUtils.getCurrentUsername());
+        if (!current.getId().equals(target.getId())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "无权访问该用户");
+        }
+        return target;
+    }
+
+    // 管理员删除用户
     @DeleteMapping("/{id}")
     public String delete(@PathVariable Long id) {
-
         userService.deleteById(id);
-
         return "删除成功";
     }
 
+    // 管理员更新任意用户
     @PutMapping("/{id}")
-    public User update(
-            @PathVariable Long id,
-            @RequestBody User user) {
+    public User update(@PathVariable Long id, @RequestBody UserAdminUpdateDTO dto) {
+        return userService.adminUpdate(id, dto);
+    }
 
-        return userService.update(id, user);
+    // 当前用户自助更新
+    @PutMapping("/me")
+    public User updateMe(@RequestBody UserUpdateDTO dto) {
+        return userService.updateMe(SecurityUtils.getCurrentUsername(), dto);
     }
 }

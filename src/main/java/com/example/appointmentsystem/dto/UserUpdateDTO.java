@@ -5,7 +5,7 @@ import lombok.Data;
 
 @Data
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class UserCreateDTO {
+public class UserUpdateDTO {
 
     private String username;
 
