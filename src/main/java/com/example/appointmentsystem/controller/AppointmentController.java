@@ -6,9 +6,7 @@ import com.example.appointmentsystem.security.SecurityUtils;
 import com.example.appointmentsystem.service.AppointmentService;
 
 
-import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -34,7 +32,10 @@ public class AppointmentController {
     public Appointment create(
             @RequestBody Appointment appointment) {
 
-        return appointmentService.save(appointment);
+        return appointmentService.save(
+                appointment,
+                SecurityUtils.getCurrentUsername()
+        );
     }
 
 
@@ -73,7 +74,10 @@ public class AppointmentController {
     public List<Appointment> findUnfinishedByUserId(
             @PathVariable Long userId) {
 
-        return appointmentService.findUnfinishedByUserId(userId);
+        return appointmentService.findUnfinishedByUserId(
+                userId,
+                SecurityUtils.getCurrentUsername()
+        );
     }
 
 
@@ -104,13 +108,10 @@ public class AppointmentController {
     public Appointment findById(
             @PathVariable Long id) {
 
-        return appointmentService.findById(id)
-                .orElseThrow(() ->
-                        new ResponseStatusException(
-                                HttpStatus.NOT_FOUND,
-                                "预约不存在"
-                        )
-                );
+        return appointmentService.findById(
+                id,
+                SecurityUtils.getCurrentUsername()
+        );
     }
 
 
@@ -133,7 +134,8 @@ public class AppointmentController {
 
         return appointmentService.update(
                 id,
-                appointment
+                appointment,
+                SecurityUtils.getCurrentUsername()
         );
     }
 

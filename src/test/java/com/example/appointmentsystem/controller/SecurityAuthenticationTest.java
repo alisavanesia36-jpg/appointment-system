@@ -1,6 +1,7 @@
 package com.example.appointmentsystem.controller;
 
 import com.example.appointmentsystem.entity.User;
+import com.example.appointmentsystem.entity.Role;
 import com.example.appointmentsystem.repository.UserRepository;
 import com.jayway.jsonpath.JsonPath;
 import org.junit.jupiter.api.Test;
@@ -74,7 +75,7 @@ class SecurityAuthenticationTest {
         user.setUsername(username);
         user.setPassword(passwordEncoder.encode(password));
         user.setPhone("12000000000");
-        user.setRole("USER");
+        user.setRole(Role.USER);
         userRepository.save(user);
     }
 }

@@ -20,5 +20,6 @@ public class User {
 
     private String phone;
 
-    private String role = "USER";
+    @Enumerated(EnumType.STRING)
+    private Role role = Role.USER;
 }

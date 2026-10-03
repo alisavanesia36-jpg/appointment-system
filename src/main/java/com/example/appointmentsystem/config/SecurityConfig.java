@@ -29,6 +29,12 @@ public class SecurityConfig {
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/appointments").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/appointments/status/*").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/appointments/time-range").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/appointments/*").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/appointments/*/confirm").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/appointments/*/complete").hasRole("ADMIN")
                         .anyRequest().authenticated())
                 .exceptionHandling(ex -> ex.authenticationEntryPoint(
                         (request, response, authException) -> {

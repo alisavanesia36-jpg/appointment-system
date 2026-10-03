@@ -194,7 +194,7 @@ class AppointmentBusinessRuleTest {
 
     private User createUser() {
         User user = new User();
-        user.setUsername("test_user_" + System.nanoTime());
+        user.setUsername("user");
         user.setPassword("password");
         user.setPhone("138" + System.nanoTime());
         return userRepository.save(user);

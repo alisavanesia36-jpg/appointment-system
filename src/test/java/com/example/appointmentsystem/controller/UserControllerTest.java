@@ -1,6 +1,7 @@
 package com.example.appointmentsystem.controller;
 
 import com.example.appointmentsystem.entity.User;
+import com.example.appointmentsystem.entity.Role;
 import com.example.appointmentsystem.repository.UserRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -79,7 +80,7 @@ class UserControllerTest {
 
         assertEquals(user.getId(),
                 userRepository.findByUsername(username).orElseThrow().getId());
-        assertEquals("USER",
+        assertEquals(Role.USER,
                 userRepository.findByUsername(username).orElseThrow().getRole());
         assertTrue(userRepository.findByUsername("nobody_" + System.nanoTime()).isEmpty());
     }

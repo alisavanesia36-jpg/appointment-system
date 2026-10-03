@@ -2,6 +2,7 @@ package com.example.appointmentsystem.controller;
 
 import com.example.appointmentsystem.entity.Appointment;
 import com.example.appointmentsystem.entity.AppointmentStatus;
+import com.example.appointmentsystem.entity.Role;
 import com.example.appointmentsystem.entity.User;
 import com.example.appointmentsystem.repository.AppointmentRepository;
 import com.example.appointmentsystem.repository.UserRepository;
@@ -102,7 +103,7 @@ class AppointmentIsolationTest {
         user.setUsername(username);
         user.setPassword(passwordEncoder.encode(password));
         user.setPhone("12000000000");
-        user.setRole("USER");
+        user.setRole(Role.USER);
         return userRepository.save(user);
     }
 

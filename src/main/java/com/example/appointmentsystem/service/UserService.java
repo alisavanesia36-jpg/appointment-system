@@ -1,6 +1,7 @@
 package com.example.appointmentsystem.service;
 
 import com.example.appointmentsystem.entity.User;
+import com.example.appointmentsystem.entity.Role;
 import com.example.appointmentsystem.exception.BusinessException;
 import com.example.appointmentsystem.repository.UserRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -24,7 +25,7 @@ public class UserService {
     // 新增用户
     public User save(User user) {
         if (user.getRole() == null) {
-            user.setRole("USER");
+            user.setRole(Role.USER);
         }
         // 明文密码 -> BCrypt 加密 -> 入库
         user.setPassword(passwordEncoder.encode(user.getPassword()));

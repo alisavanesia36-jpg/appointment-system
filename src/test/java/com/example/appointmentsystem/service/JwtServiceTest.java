@@ -1,6 +1,7 @@
 package com.example.appointmentsystem.service;
 
 import com.example.appointmentsystem.entity.User;
+import com.example.appointmentsystem.entity.Role;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -19,7 +20,7 @@ class JwtServiceTest {
         User user = new User();
         user.setId(1L);
         user.setUsername("alice");
-        user.setRole("USER");
+        user.setRole(Role.USER);
 
         String token = jwtService.generateToken(user);
 
@@ -37,7 +38,7 @@ class JwtServiceTest {
         JwtService expiredService = new JwtService(secret, -1);
         User user = new User();
         user.setUsername("bob");
-        user.setRole("USER");
+        user.setRole(Role.USER);
 
         String token = expiredService.generateToken(user);
 

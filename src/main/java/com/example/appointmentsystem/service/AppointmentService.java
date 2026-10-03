@@ -2,6 +2,7 @@ package com.example.appointmentsystem.service;
 
 import com.example.appointmentsystem.entity.Appointment;
 import com.example.appointmentsystem.entity.AppointmentStatus;
+import com.example.appointmentsystem.entity.Role;
 import com.example.appointmentsystem.entity.Service;
 import com.example.appointmentsystem.entity.User;
 import com.example.appointmentsystem.repository.AppointmentRepository;
@@ -12,7 +13,6 @@ import com.example.appointmentsystem.repository.UserRepository;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.http.HttpStatus;
@@ -42,10 +42,28 @@ public class AppointmentService {
         this.staffRepository = staffRepository;
     }
 
+    private User resolveUser(String username) {
+        return userRepository.findByUsername(username)
+                .orElseThrow(() -> new BusinessException("用户不存在"));
+    }
+
+    private boolean isAdmin(User user) {
+        return user.getRole() == Role.ADMIN;
+    }
+
     /**
      * 创建预约
      */
-    public Appointment save(Appointment appointment) {
+    public Appointment save(Appointment appointment, String username) {
+
+        User currentUser = resolveUser(username);
+        if (!isAdmin(currentUser)
+                && !appointment.getUserId().equals(currentUser.getId())) {
+            throw new ResponseStatusException(
+                    HttpStatus.FORBIDDEN,
+                    "只能创建自己的预约"
+            );
+        }
 
         // 1. 检查用户是否存在
         userRepository.findById(appointment.getUserId())
@@ -172,7 +190,7 @@ public class AppointmentService {
     public List<Appointment> findByUserId(Long userId, String username) {
         User currentUser = userRepository.findByUsername(username)
                 .orElseThrow(() -> new BusinessException("用户不存在"));
-        if (!currentUser.getId().equals(userId)) {
+        if (!isAdmin(currentUser) && !currentUser.getId().equals(userId)) {
             throw new ResponseStatusException(
                     HttpStatus.FORBIDDEN,
                     "无权访问该用户的预约"
@@ -185,7 +203,16 @@ public class AppointmentService {
      * 查询用户未完成的预约
      */
     public List<Appointment> findUnfinishedByUserId(
-            Long userId) {
+            Long userId,
+            String username) {
+
+        User currentUser = resolveUser(username);
+        if (!isAdmin(currentUser) && !currentUser.getId().equals(userId)) {
+            throw new ResponseStatusException(
+                    HttpStatus.FORBIDDEN,
+                    "无权访问该用户的预约"
+            );
+        }
 
         return appointmentRepository.findByUserIdAndStatusIn(
                 userId,
@@ -221,8 +248,23 @@ public class AppointmentService {
     /**
      * 根据 ID 查询预约
      */
-    public Optional<Appointment> findById(Long id) {
-        return appointmentRepository.findById(id);
+    public Appointment findById(Long id, String username) {
+        Appointment appointment = appointmentRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "预约不存在"
+                ));
+
+        User currentUser = resolveUser(username);
+        if (!isAdmin(currentUser)
+                && !appointment.getUserId().equals(currentUser.getId())) {
+            throw new ResponseStatusException(
+                    HttpStatus.FORBIDDEN,
+                    "无权访问该预约"
+            );
+        }
+
+        return appointment;
     }
 
     /**
@@ -243,7 +285,8 @@ public class AppointmentService {
      */
     public Appointment update(
             Long id,
-            Appointment appointment) {
+            Appointment appointment,
+            String username) {
 
         // 1. 检查原预约是否存在
         Appointment existingAppointment =
@@ -253,6 +296,18 @@ public class AppointmentService {
                                         HttpStatus.NOT_FOUND,
                                         "预约不存在"
                                 ));
+
+        User currentUser = resolveUser(username);
+        if (!isAdmin(currentUser)
+                && !existingAppointment.getUserId().equals(currentUser.getId())) {
+            throw new ResponseStatusException(
+                    HttpStatus.FORBIDDEN,
+                    "只能修改自己的预约"
+            );
+        }
+        if (!isAdmin(currentUser)) {
+            appointment.setUserId(currentUser.getId());
+        }
 
         // 2. 检查用户是否存在
         userRepository.findById(appointment.getUserId())
@@ -418,10 +473,10 @@ public class AppointmentService {
                                         "预约不存在"
                                 ));
 
-        User currentUser = userRepository.findByUsername(username)
-                .orElseThrow(() -> new BusinessException("用户不存在"));
+        User currentUser = resolveUser(username);
 
-        if (!appointment.getUserId().equals(currentUser.getId())) {
+        if (!isAdmin(currentUser)
+                && !appointment.getUserId().equals(currentUser.getId())) {
             throw new ResponseStatusException(
                     HttpStatus.FORBIDDEN,
                     "只能取消自己的预约"

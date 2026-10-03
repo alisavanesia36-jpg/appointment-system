@@ -33,7 +33,7 @@ public class JwtService {
         JWTClaimsSet claims = new JWTClaimsSet.Builder()
                 .subject(user.getUsername())
                 .claim("userId", user.getId())
-                .claim("role", user.getRole())
+                .claim("role", user.getRole() == null ? "USER" : user.getRole().name())
                 .issueTime(Date.from(now))
                 .expirationTime(Date.from(now.plusSeconds(expirationSeconds)))
                 .build();
