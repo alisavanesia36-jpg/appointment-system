@@ -25,3 +25,6 @@ application-local.properties
 
 # Database files
 *.db
+
+# AI assistant local files
+.workbuddy/

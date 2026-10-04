@@ -165,6 +165,11 @@ public class AppointmentService {
             }
         }
 
+        // 10. 兜底状态：前端未传 status 时，默认为 PENDING
+        if (appointment.getStatus() == null) {
+            appointment.setStatus(AppointmentStatus.PENDING);
+        }
+
         return appointmentRepository.save(appointment);
     }
 

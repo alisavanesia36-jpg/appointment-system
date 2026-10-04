@@ -1138,3 +1138,66 @@ Content-Type: application/json
 
 ### 测试非法完成预约(PENDING直接完成)
 PUT http://localhost:8080/appointments/20/complete
+
+### 创建预约测试
+POST http://localhost:8080/appointments
+Content-Type: application/json
+Authorization: Bearer 你的token
+
+{
+  "serviceId":1,
+  "staffId":2,
+  "appointmentTime":"2026-10-04T10:00:00"
+}
+
+### 登录获取token
+POST http://localhost:8080/auth/login
+Content-Type: application/json
+
+{
+  "username": "testuser002",
+  "password": "123456"
+}
+
+### 创建预约测试
+POST http://localhost:8080/appointments
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0ZXN0dXNlcjAwMiIsInJvbGUiOiJVU0VSIiwiZXhwIjoxNzkxMTAwMzI3LCJ1c2VySWQiOjYsImlhdCI6MTc5MTA5NjcyN30.KZgfPNusKFjJw0420yFXxiZqknFEbM2NxP0eHr3COPo
+
+{
+  "serviceId":1,
+  "staffId":2,
+  "appointmentTime":"2026-10-04T10:00:00"
+}
+
+### 获取当前用户
+GET http://localhost:8080/users/me
+Authorization: Bearer eyJhbGciOiJI9.eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0ZXN0dXNlcjAwMiIsInJvbGUiOiJVU0VSIiwiZXhwIjoxNzkxMTAwNDM0LCJ1c2VySWQiOjYsImlhdCI6MTc5MTA5NjgzNH0.blvaxXe4IhUOv1Vf2K_SnEn0UqI4HUvC-vOhYCtzggE
+
+### 创建预约测试
+POST http://localhost:8080/appointments
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0ZXN0dXNlcjAwMiIsInJvbGUiOiJVU0VSIiwiZXhwIjoxNzkxMTAwNDM0LCJ1c2VySWQiOjYsImlhdCI6MTc5MTA5NjgzNH0.blvaxXe4IhUOv1Vf2K_SnEn0UqI4HUvC-vOhYCtzggE
+
+{
+  "serviceId":1,
+  "staffId":2,
+  "appointmentTime":"2026-10-04T10:00:00"
+}
+
+
+### 创建预约测试
+POST http://localhost:8080/appointments
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0ZXN0dXNlcjAwMiIsInJvbGUiOiJVU0VSIiwiZXhwIjoxNzkxMTAwNDM0LCJ1c2VySWQiOjYsImlhdCI6MTc5MTA5NjgzNH0.blvaxXe4IhUOv1Vf2K_SnEn0UqI4HUvC-vOhYCtzggE
+
+{
+  "serviceId":1,
+  "staffId":2,
+  "appointmentTime":"2026-10-04T10:00:00"
+}
+
+
+### 当前用户测试
+GET http://localhost:8080/users/me
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0ZXN0dXNlcjAwMiIsInJvbGUiOiJVU0VSIiwiZXhwIjoxNzkxMTAwNDM0LCJ1c2VySWQiOjYsImlhdCI6MTc5MTA5NjgzNH0.blvaxXe4IhUOv1Vf2K_SnEn0UqI4HUvC-vOhYCtzggE
