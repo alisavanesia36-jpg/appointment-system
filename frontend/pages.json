@@ -53,6 +53,12 @@
 			"style": {
 				"navigationBarTitleText": "服务管理"
 			}
+		},
+		{
+			"path": "pages/admin/staff/list",
+			"style": {
+				"navigationBarTitleText": "员工管理"
+			}
 		}
 	],
 	"globalStyle": {

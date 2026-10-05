@@ -12,6 +12,22 @@ export function getStaffById(id) {
   return http.get(`/staff/${id}`)
 }
 
+// 新增员工（仅 ADMIN）
+// POST /staff  body: { name, phone }
+export function createStaff(data) {
+  return http.post('/staff', data)
+}
+
+// 删除员工（仅 ADMIN）
+// DELETE /staff/{id}
+// 注意：后端 StaffService.deleteById 不做关联检查，
+// 如果 staff_services / appointments 中仍有该员工记录，
+// 删除会因外键约束失败并被 GlobalExceptionHandler 转为 BusinessException，
+// 前端需把 e.message 透传给用户。
+export function deleteStaff(id) {
+  return http.delete(`/staff/${id}`)
+}
+
 // 查询所有员工-服务对应关系
 // GET /staff-services
 export function getStaffServices() {
@@ -37,6 +53,8 @@ export function getStaffServicesByService(serviceId) {
 export default {
   getStaffList,
   getStaffById,
+  createStaff,
+  deleteStaff,
   getStaffServices,
   getStaffServicesByStaff,
   getStaffServicesByService
