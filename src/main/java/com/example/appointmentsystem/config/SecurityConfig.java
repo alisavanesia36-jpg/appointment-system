@@ -31,6 +31,18 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
                         .requestMatchers(HttpMethod.POST, "/auth/register").permitAll()
+                        // ===== v1.5 后台写权限加固 =====
+                        // Service 写操作：仅 ADMIN
+                        .requestMatchers(HttpMethod.POST, "/services").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/services/*").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/services/*").hasRole("ADMIN")
+                        // Staff 写操作：仅 ADMIN
+                        .requestMatchers(HttpMethod.POST, "/staff").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/staff/*").hasRole("ADMIN")
+                        // StaffServiceMapping 写操作：仅 ADMIN
+                        .requestMatchers(HttpMethod.POST, "/staff-services/*/*").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/staff-services/*/*").hasRole("ADMIN")
+                        // ===== 既有 appointments / users 权限规则 =====
                         .requestMatchers(HttpMethod.GET, "/appointments").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.GET, "/appointments/status/*").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.GET, "/appointments/time-range").hasRole("ADMIN")
