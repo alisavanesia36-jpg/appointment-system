@@ -50,6 +50,22 @@ export function getStaffServicesByService(serviceId) {
   return http.get(`/staff-services/service/${serviceId}`)
 }
 
+// 给员工分配一个服务（仅 ADMIN）
+// POST /staff-services/{staffId}/{serviceId}
+// 后端返回 StaffServiceMapping 对象。
+// 注意：后端没有先检查 exists，重复分配会因主键冲突失败（但本次页面会先在
+// 前端用 assignedServiceIds.has(serviceId) 拦截，避免无效请求）。
+export function addStaffService(staffId, serviceId) {
+  return http.post(`/staff-services/${staffId}/${serviceId}`)
+}
+
+// 取消员工的一个服务分配（仅 ADMIN）
+// DELETE /staff-services/{staffId}/{serviceId}
+// 后端返回 "删除成功" 字符串。
+export function deleteStaffService(staffId, serviceId) {
+  return http.delete(`/staff-services/${staffId}/${serviceId}`)
+}
+
 export default {
   getStaffList,
   getStaffById,
@@ -57,5 +73,7 @@ export default {
   deleteStaff,
   getStaffServices,
   getStaffServicesByStaff,
-  getStaffServicesByService
+  getStaffServicesByService,
+  addStaffService,
+  deleteStaffService
 }
