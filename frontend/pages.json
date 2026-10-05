@@ -65,6 +65,12 @@
 			"style": {
 				"navigationBarTitleText": "员工-服务分配"
 			}
+		},
+		{
+			"path": "pages/admin/user/list",
+			"style": {
+				"navigationBarTitleText": "用户管理"
+			}
 		}
 	],
 	"globalStyle": {

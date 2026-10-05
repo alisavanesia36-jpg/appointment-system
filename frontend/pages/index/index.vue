@@ -108,6 +108,20 @@
 			<view class="service-arrow">›</view>
 		</view>
 
+		<!-- 用户管理入口（仅 ADMIN 可见） -->
+		<view v-if="isAdminUser" class="card service-card" @click="goToUserAdmin">
+			<view class="service-left">
+				<view class="service-icon service-icon-user-admin">👥</view>
+
+				<view class="service-content">
+					<view class="service-title">用户管理</view>
+					<view class="service-subtitle">管理系统中的用户账号</view>
+				</view>
+			</view>
+
+			<view class="service-arrow">›</view>
+		</view>
+
 		<view class="actions">
 			<button class="btn-logout" @click="handleLogout">退出登录</button>
 		</view>
@@ -267,6 +281,17 @@ function goToStaffServiceAdmin() {
 	})
 }
 
+function goToUserAdmin() {
+	// 前端二次校验：缓存里不是 ADMIN 直接拒绝
+	if (!isAdmin()) {
+		uni.showToast({ title: '无管理员权限', icon: 'none' })
+		return
+	}
+	uni.navigateTo({
+		url: '/pages/admin/user/list'
+	})
+}
+
 function handleLogout() {
 	uni.showModal({
 		title: '提示',
@@ -400,6 +425,10 @@ onMounted(() => {
 
 .service-icon-staff-service-admin {
 	background-color: #ecfdf5;
+}
+
+.service-icon-user-admin {
+	background-color: #fee2e2;
 }
 
 .service-content {
