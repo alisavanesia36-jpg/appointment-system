@@ -38,13 +38,18 @@
 			<view class="service-arrow">›</view>
 		</view>
 
-		<view class="card feature-card">
-			<view class="card-title">即将上线</view>
+		<!-- 我的预约入口 -->
+		<view class="card service-card" @click="goToMyAppointments">
+			<view class="service-left">
+				<view class="service-icon service-icon-my">📋</view>
 
-			<view class="feature-item">
-				<view class="feature-dot"></view>
-				<text class="feature-text">我的预约、员工选择等功能正在开发中</text>
+				<view class="service-content">
+					<view class="service-title">我的预约</view>
+					<view class="service-subtitle">查看与管理你的预约记录</view>
+				</view>
 			</view>
+
+			<view class="service-arrow">›</view>
 		</view>
 
 		<view class="actions">
@@ -145,6 +150,12 @@ async function ensureUser() {
 function goToServices() {
 	uni.navigateTo({
 		url: '/pages/service/list'
+	})
+}
+
+function goToMyAppointments() {
+	uni.navigateTo({
+		url: '/pages/appointment/list'
 	})
 }
 
@@ -263,6 +274,10 @@ onMounted(() => {
 	margin-right: 20rpx;
 }
 
+.service-icon-my {
+	background-color: #ecfdf5;
+}
+
 .service-content {
 	flex: 1;
 }
@@ -301,26 +316,6 @@ onMounted(() => {
 .role-admin {
 	background-color: #fef3c7;
 	color: #b45309;
-}
-
-.feature-card {
-	.feature-item {
-		display: flex;
-		align-items: center;
-		gap: 16rpx;
-	}
-
-	.feature-dot {
-		width: 14rpx;
-		height: 14rpx;
-		border-radius: 50%;
-		background-color: #10b981;
-	}
-
-	.feature-text {
-		font-size: 28rpx;
-		color: #374151;
-	}
 }
 
 .actions {

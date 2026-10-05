@@ -35,6 +35,12 @@
 			"style": {
 				"navigationBarTitleText": "确认预约"
 			}
+		},
+		{
+			"path": "pages/appointment/list",
+			"style": {
+				"navigationBarTitleText": "我的预约"
+			}
 		}
 	],
 	"globalStyle": {
