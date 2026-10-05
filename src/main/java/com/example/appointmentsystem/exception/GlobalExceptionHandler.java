@@ -1,10 +1,12 @@
 package com.example.appointmentsystem.exception;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.format.DateTimeParseException;
 import java.util.HashMap;
@@ -58,6 +60,25 @@ public class GlobalExceptionHandler {
         Map<String, Object> result = new HashMap<>();
         result.put("message", "日期格式错误，应为 YYYY-MM-DD");
         return result;
+    }
+
+    // ==================== v2.1 新增：ResponseStatusException 透传 ====================
+    // Service 层抛 ResponseStatusException 时（403 / 404 等），把 reason 包装为 { message: "..." }
+    // 保留 HTTP 状态码。仅用于透传业务后端中文 message 到 H5，
+    // 避免 Spring 默认错误页丢失业务文案。
+    @ExceptionHandler(ResponseStatusException.class)
+    public ResponseEntity<Map<String, Object>> handleResponseStatusException(
+            ResponseStatusException e) {
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("message", e.getReason() != null ? e.getReason() : "请求失败");
+
+        HttpStatus status = HttpStatus.resolve(
+                e.getStatusCode().value());
+        if (status == null) {
+            status = HttpStatus.INTERNAL_SERVER_ERROR;
+        }
+        return ResponseEntity.status(status).body(result);
     }
 
 }

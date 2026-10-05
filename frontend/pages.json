@@ -43,6 +43,12 @@
 			}
 		},
 		{
+			"path": "pages/appointment/reschedule",
+			"style": {
+				"navigationBarTitleText": "预约改期"
+			}
+		},
+		{
 			"path": "pages/admin/appointment/list",
 			"style": {
 				"navigationBarTitleText": "预约管理"

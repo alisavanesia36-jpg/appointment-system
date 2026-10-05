@@ -170,16 +170,42 @@ public class AppointmentController {
     }
 
     // ==================== v2.0 第一阶段：可用时间段查询 ====================
-    // GET /appointments/available-slots?staffId=X&serviceId=Y&date=YYYY-MM-DD
+    // GET /appointments/available-slots?staffId=X&serviceId=Y&date=YYYY-MM-DD[&excludeAppointmentId=Z]
     // 任何登录用户可访问（沿用 SecurityConfig anyRequest().authenticated()）
     // 返回 List<String>，例如 ["09:00","10:00","11:00",...]
+    // excludeAppointmentId 是 v2.1 第一阶段新增的可选参数，用于改期场景：
+    //   不传：v2.0 行为完全不变（向后兼容）
+    //   传值：从 busy 列表中剔除该预约自身，让原时段可重新出现在可用时间中
+    //   必须保证该预约的 staffId / serviceId 与请求参数匹配，否则返回 400 "预约不存在或不匹配"
     @GetMapping("/available-slots")
     public List<String> getAvailableSlots(
             @RequestParam Long staffId,
             @RequestParam Long serviceId,
-            @RequestParam String date
+            @RequestParam String date,
+            @RequestParam(required = false) Long excludeAppointmentId
     ) {
         return appointmentService.findAvailableSlots(
-                staffId, serviceId, date);
+                staffId, serviceId, date, excludeAppointmentId);
+    }
+
+    // ==================== v2.1 第一阶段：预约改期 ====================
+    // PUT /appointments/{id}/reschedule
+    // 请求体：{ "appointmentTime": "YYYY-MM-DDTHH:mm:ss" }
+    // 业务约束：
+    //   - 仅允许修改 appointmentTime
+    //   - serviceId / staffId / userId / status 一律从数据库原值覆盖入参（忽略前端传值）
+    //   - 仅 PENDING / CONFIRMED 可被改期
+    //   - USER 只能改自己的预约，ADMIN 可以改任何人
+    //   - 所有预约业务校验（员工-服务关系、营业时间、当前时间、冲突）由 Service 层 reschedule() 完整执行
+    @PutMapping("/{id}/reschedule")
+    public Appointment reschedule(
+            @PathVariable Long id,
+            @RequestBody Appointment appointment) {
+
+        return appointmentService.reschedule(
+                id,
+                appointment,
+                SecurityUtils.getCurrentUsername()
+        );
     }
 }

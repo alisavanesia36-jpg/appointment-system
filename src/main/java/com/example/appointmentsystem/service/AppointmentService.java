@@ -553,6 +553,9 @@ public class AppointmentService {
      * 4. 营业时间 09:00–18:00，按 service.duration 切片
      * 5. 跳过与已有非 CANCELLED 预约重叠的 slot
      * 6. 跳过早于当前时间的 slot
+     * 7. excludeAppointmentId 不为空时，跳过该预约的 busy 区间（用于改期场景让原时段可选）
+     *    附加校验：传入的 excludeId 必须存在，且 staffId / serviceId 必须匹配请求中的 staffId / serviceId，
+     *    防止用户通过 excludeAppointmentId 排除任意他人预约
      *
      * 注意：此处只复验"岗位 / 时长"等基础规则；POST /appointments 仍会跑 save() 全部校验，
      * 前端绕过 available-slots 直接提交也会被 save() 拦截。
@@ -560,7 +563,8 @@ public class AppointmentService {
     public List<String> findAvailableSlots(
             Long staffId,
             Long serviceId,
-            String date
+            String date,
+            Long excludeAppointmentId
     ) {
         // 1. 员工必须存在
         staffRepository.findById(staffId)
@@ -590,6 +594,19 @@ public class AppointmentService {
         LocalDateTime businessStart = targetDate.atTime(9, 0);
         LocalDateTime businessEnd = targetDate.atTime(18, 0);
 
+        // 5b. excludeAppointmentId 校验：存在性 + staffId 匹配 + serviceId 匹配
+        //     防止用户通过该参数排除他人预约绕过冲突检查
+        if (excludeAppointmentId != null) {
+            Appointment excludeAppt = appointmentRepository
+                    .findById(excludeAppointmentId)
+                    .orElseThrow(() ->
+                            new BusinessException("预约不存在或不匹配"));
+            if (!excludeAppt.getStaffId().equals(staffId)
+                    || !excludeAppt.getServiceId().equals(serviceId)) {
+                throw new BusinessException("预约不存在或不匹配");
+            }
+        }
+
         // 6. 查询当天该员工所有非 CANCELLED 预约（限定一天内，性能更优）
         List<Appointment> existing = appointmentRepository
                 .findByStaffIdAndAppointmentTimeBetweenAndStatusNot(
@@ -600,8 +617,13 @@ public class AppointmentService {
                 );
 
         // 7. 计算已有预约的 [start, end) 区间列表
+        //    excludeAppointmentId 不为空时，把这条预约从 busy 列表中剔除
         List<LocalDateTime[]> busyIntervals = new ArrayList<>();
         for (Appointment a : existing) {
+            if (excludeAppointmentId != null
+                    && excludeAppointmentId.equals(a.getId())) {
+                continue;
+            }
             Service aService = serviceRepository.findById(a.getServiceId())
                     .orElseThrow(() ->
                             new BusinessException("服务不存在"));
@@ -643,5 +665,139 @@ public class AppointmentService {
         }
 
         return result;
+    }
+
+    // ==================== v2.1 第一阶段：用户预约改期 ====================
+
+    /**
+     * 改期：仅允许修改 appointmentTime；serviceId / staffId / userId / status 全部从数据库原值覆盖入参。
+     *
+     * 业务规则：
+     * 1. 预约必须存在
+     * 2. 权限：USER 只能改自己的（与 update 一致）；ADMIN 可以改任何人的
+     * 3. 状态必须为 PENDING 或 CONFIRMED；CANCELLED / COMPLETED 一律拒绝
+     * 4. serviceId / staffId / userId 入参被忽略，强制使用数据库原值（防 USER 改服务/员工）
+     * 5. 员工-服务关系再次校验（即便 serviceId 没改；存在可能后端分配关系改变）
+     * 6. service.duration 重新读取用于计算 newEnd
+     * 7. 新时间不能早于当前时间
+     * 8. 新时间必须在 09:00–18:00 营业时段内
+     * 9. 新预约不能与该员工其它有效预约重叠（自身排除）
+     */
+    public Appointment reschedule(
+            Long id,
+            Appointment appointment,
+            String username) {
+
+        // 1. 原预约必须存在
+        Appointment existingAppointment =
+                appointmentRepository.findById(id)
+                        .orElseThrow(() ->
+                                new ResponseStatusException(
+                                        HttpStatus.NOT_FOUND,
+                                        "预约不存在"
+                                ));
+
+        // 2. 权限：USER 只能改自己的；ADMIN 可以改任何人
+        User currentUser = resolveUser(username);
+        if (!isAdmin(currentUser)
+                && !existingAppointment.getUserId().equals(currentUser.getId())) {
+            throw new ResponseStatusException(
+                    HttpStatus.FORBIDDEN,
+                    "只能修改自己的预约"
+            );
+        }
+
+        // 3. 状态白名单：仅 PENDING / CONFIRMED 可改期
+        AppointmentStatus currentApptStatus = existingAppointment.getStatus();
+        if (currentApptStatus != AppointmentStatus.PENDING
+                && currentApptStatus != AppointmentStatus.CONFIRMED) {
+            throw new BusinessException("该预约状态不允许修改");
+        }
+
+        // 4. 字段冻结：serviceId / staffId / userId / status 一律使用数据库原值
+        //    入参中的 appointmentTime 为唯一可变字段。
+        Long lockedUserId = existingAppointment.getUserId();
+        Long lockedServiceId = existingAppointment.getServiceId();
+        Long lockedStaffId = existingAppointment.getStaffId();
+        LocalDateTime newStart = appointment.getAppointmentTime();
+
+        // 5. service 必须存在（沿用 update() 错误文案一致）
+        Service service = serviceRepository.findById(lockedServiceId)
+                .orElseThrow(() ->
+                        new ResponseStatusException(
+                                HttpStatus.NOT_FOUND,
+                                "服务不存在"
+                        ));
+
+        // 6. staff 必须存在
+        staffRepository.findById(lockedStaffId)
+                .orElseThrow(() ->
+                        new ResponseStatusException(
+                                HttpStatus.NOT_FOUND,
+                                "员工不存在"
+                        ));
+
+        // 7. 员工-服务关系必须仍然有效（即便 serviceId 没改，仍可能关系被后台移除）
+        boolean canProvideService = staffServiceMappingRepository
+                .existsByIdStaffIdAndIdServiceId(lockedStaffId, lockedServiceId);
+        if (!canProvideService) {
+            throw new BusinessException("这个员工不会做这个服务");
+        }
+
+        // 8. 查询员工所有非 CANCELLED 预约
+        List<Appointment> staffAppointments = appointmentRepository
+                .findByStaffIdAndStatusNot(
+                        lockedStaffId,
+                        AppointmentStatus.CANCELLED
+                );
+
+        // 9. 计算新预约的时间范围（duration 重新从 service 读取）
+        LocalDateTime newEnd = newStart.plusMinutes(service.getDuration());
+
+        // 10. 不能早于当前时间
+        if (newStart.isBefore(LocalDateTime.now(clock))) {
+            throw new BusinessException("预约时间不能早于当前时间");
+        }
+
+        // 11. 营业时间 09:00–18:00
+        LocalDateTime businessStart = newStart.toLocalDate().atTime(9, 0);
+        LocalDateTime businessEnd = newStart.toLocalDate().atTime(18, 0);
+        if (newStart.isBefore(businessStart) || newEnd.isAfter(businessEnd)) {
+            throw new BusinessException(
+                    "预约时间必须在营业时间09:00-18:00内");
+        }
+
+        // 12. 冲突判断：排除自身（与 update() 一致）
+        for (Appointment existing : staffAppointments) {
+            if (existing.getId().equals(id)) {
+                continue;
+            }
+            Service existingService = serviceRepository
+                    .findById(existing.getServiceId())
+                    .orElseThrow(() ->
+                            new ResponseStatusException(
+                                    HttpStatus.NOT_FOUND,
+                                    "服务不存在"
+                            ));
+            LocalDateTime existingStart = existing.getAppointmentTime();
+            LocalDateTime existingEnd = existingStart.plusMinutes(
+                    existingService.getDuration());
+            boolean overlap = newStart.isBefore(existingEnd)
+                    && newEnd.isAfter(existingStart);
+            if (overlap) {
+                throw new BusinessException(
+                        "这个员工在这个时间段已经有预约了");
+            }
+        }
+
+        // 13. 写入：仅改 appointmentTime，其余字段保持原值
+        existingAppointment.setAppointmentTime(newStart);
+        // 防御性重写：即便有人恶意传其他字段，也不写入
+        existingAppointment.setUserId(lockedUserId);
+        existingAppointment.setServiceId(lockedServiceId);
+        existingAppointment.setStaffId(lockedStaffId);
+        // status 保持原值（不调用 setStatus）
+
+        return appointmentRepository.save(existingAppointment);
     }
 }

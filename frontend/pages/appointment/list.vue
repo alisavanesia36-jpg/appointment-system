@@ -45,8 +45,17 @@
           </view>
         </view>
 
-        <view v-if="canCancel(item.status)" class="card-bottom">
+        <view v-if="canReschedule(item.status) || canCancel(item.status)" class="card-bottom">
           <button
+            v-if="canReschedule(item.status)"
+            class="reschedule-btn"
+            :disabled="reschedulingId === item.id"
+            @click="onReschedule(item)"
+          >
+            {{ reschedulingId === item.id ? '处理中...' : '改期' }}
+          </button>
+          <button
+            v-if="canCancel(item.status)"
             class="cancel-btn"
             :disabled="cancellingId === item.id"
             @click="onCancel(item)"
@@ -70,6 +79,7 @@ const appointments = ref([])
 const loading = ref(false)
 const errorMessage = ref('')
 const cancellingId = ref(null)
+const reschedulingId = ref(null)
 
 function formatDateTime(value) {
   if (!value) return '-'
@@ -102,6 +112,36 @@ function statusClass(status) {
 
 function canCancel(status) {
   return status === 'PENDING' || status === 'CONFIRMED'
+}
+
+/**
+ * 改期白名单：与 canCancel 保持一致（PENDING / CONFIRMED）。
+ * CANCELLED / COMPLETED 不允许改期。
+ */
+function canReschedule(status) {
+  return status === 'PENDING' || status === 'CONFIRMED'
+}
+
+function onReschedule(item) {
+  if (!item || !item.id) return
+  if (!canReschedule(item.status)) return
+
+  // URL 只传 appointmentId；serviceId/staffId/oldTime 不依赖 URL，
+  // 改期页面通过 GET /appointments/{id} 重新获取权威数据
+  reschedulingId.value = item.id
+  try {
+    uni.navigateTo({
+      url: `/pages/appointment/reschedule?appointmentId=${encodeURIComponent(String(item.id))}`,
+      fail: () => {
+        uni.showToast({ title: '无法进入改期页', icon: 'none' })
+      }
+    })
+  } finally {
+    // 跳转后清理锁定；onLoad 时再次进入页面会重新启用
+    setTimeout(() => {
+      reschedulingId.value = null
+    }, 800)
+  }
 }
 
 function buildMap(list, keyField = 'id') {
@@ -309,6 +349,7 @@ onLoad(() => {
   border-top: 2rpx solid #f3f4f6;
   display: flex;
   justify-content: flex-end;
+  gap: 16rpx;
 }
 
 .cancel-btn {
@@ -325,6 +366,22 @@ onLoad(() => {
 .cancel-btn[disabled] {
   color: #fca5a5;
   border-color: #fee2e2;
+}
+
+.reschedule-btn {
+  padding: 0 28rpx;
+  font-size: 26rpx;
+  line-height: 64rpx;
+  background: #fff;
+  color: #3b82f6;
+  border: 2rpx solid #bfdbfe;
+  border-radius: 12rpx;
+  font-weight: 500;
+}
+
+.reschedule-btn[disabled] {
+  color: #93c5fd;
+  border-color: #dbeafe;
 }
 
 .state {
