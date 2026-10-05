@@ -4,23 +4,23 @@
 
 ## 文件命名规范
 
-| 页面 | 文件名 |
-|------|--------|
-| 登录 | `login.png` |
-| 注册 | `register.png` |
-| 首页（含未读角标） | `home.png` |
-| 服务列表 | `service-list.png` |
-| 员工列表 | `staff-list.png` |
-| 创建预约 | `appointment-create.png` |
-| 我的预约 | `appointment-list.png` |
-| 预约改期 | `appointment-reschedule.png` |
-| **消息通知（v2.2）** | `notification-list.png` |
-| 管理仪表盘 | `admin-dashboard.png` |
-| 预约管理（ADMIN） | `admin-appointment.png` |
-| 服务管理（ADMIN） | `admin-service.png` |
-| 员工管理（ADMIN） | `admin-staff.png` |
-| 员工-服务分配（ADMIN） | `admin-staff-service.png` |
-| 用户管理（ADMIN） | `admin-user.png` |
+| 页面             | 文件名                          |
+| -------------- | ---------------------------- |
+| 登录             | `login.png`                  |
+| 注册             | `register.png`               |
+| 首页（含未读角标）      | `home.png`                   |
+| 服务列表           | `service-list.png`           |
+| 员工列表           | `staff-list.png`             |
+| 创建预约           | `appointment-create.png`     |
+| 我的预约           | `appointment-list.png`       |
+| 预约改期           | `appointment-reschedule.png` |
+| **消息通知（v2.2）** | `notification-list.png`      |
+| 管理仪表盘          | `admin-dashboard.png`        |
+| 预约管理（ADMIN）    | `admin-appointment.png`      |
+| 服务管理（ADMIN）    | `admin-service.png`          |
+| 员工管理（ADMIN）    | `admin-staff.png`            |
+| 员工-服务分配（ADMIN） | `admin-staff-service.png`    |
+| 用户管理（ADMIN）    | `admin-user.png`             |
 
 ## 截图获取步骤
 
