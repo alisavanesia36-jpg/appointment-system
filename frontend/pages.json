@@ -47,6 +47,12 @@
 			"style": {
 				"navigationBarTitleText": "预约管理"
 			}
+		},
+		{
+			"path": "pages/admin/service/list",
+			"style": {
+				"navigationBarTitleText": "服务管理"
+			}
 		}
 	],
 	"globalStyle": {

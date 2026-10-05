@@ -66,6 +66,20 @@
 			<view class="service-arrow">›</view>
 		</view>
 
+		<!-- 服务管理入口（仅 ADMIN 可见） -->
+		<view v-if="isAdminUser" class="card service-card" @click="goToServiceAdmin">
+			<view class="service-left">
+				<view class="service-icon service-icon-service-admin">⚙️</view>
+
+				<view class="service-content">
+					<view class="service-title">服务管理</view>
+					<view class="service-subtitle">维护可预约的服务列表</view>
+				</view>
+			</view>
+
+			<view class="service-arrow">›</view>
+		</view>
+
 		<view class="actions">
 			<button class="btn-logout" @click="handleLogout">退出登录</button>
 		</view>
@@ -192,6 +206,17 @@ function goToAdmin() {
 	})
 }
 
+function goToServiceAdmin() {
+	// 前端二次校验：缓存里不是 ADMIN 直接拒绝
+	if (!isAdmin()) {
+		uni.showToast({ title: '无管理员权限', icon: 'none' })
+		return
+	}
+	uni.navigateTo({
+		url: '/pages/admin/service/list'
+	})
+}
+
 function handleLogout() {
 	uni.showModal({
 		title: '提示',
@@ -313,6 +338,10 @@ onMounted(() => {
 
 .service-icon-admin {
 	background-color: #fef3c7;
+}
+
+.service-icon-service-admin {
+	background-color: #f5f3ff;
 }
 
 .service-content {
