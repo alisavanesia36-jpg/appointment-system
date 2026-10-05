@@ -83,6 +83,12 @@
 			"style": {
 				"navigationBarTitleText": "管理仪表盘"
 			}
+		},
+		{
+			"path": "pages/notification/list",
+			"style": {
+				"navigationBarTitleText": "消息通知"
+			}
 		}
 	],
 	"globalStyle": {

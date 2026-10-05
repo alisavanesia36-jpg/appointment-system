@@ -18,6 +18,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.http.HttpStatus;
 import com.example.appointmentsystem.exception.BusinessException;
@@ -39,19 +40,23 @@ public class AppointmentService {
     private final StaffServiceMappingRepository staffServiceMappingRepository;
     private final UserRepository userRepository;
     private final StaffRepository staffRepository;
+    private final NotificationService notificationService;
 
     public AppointmentService(
             AppointmentRepository appointmentRepository,
             ServiceRepository serviceRepository,
             StaffServiceMappingRepository staffServiceMappingRepository,
             UserRepository userRepository,
-            StaffRepository staffRepository) {
+            StaffRepository staffRepository,
+            NotificationService notificationService) {
 
         this.appointmentRepository = appointmentRepository;
         this.serviceRepository = serviceRepository;
         this.staffServiceMappingRepository = staffServiceMappingRepository;
         this.userRepository = userRepository;
         this.staffRepository = staffRepository;
+        // v2.2 联动：cancel/reschedule/deleteById 成功后清理该预约的所有未来提醒
+        this.notificationService = notificationService;
     }
 
     private User resolveUser(String username) {
@@ -285,8 +290,15 @@ public class AppointmentService {
     }
 
     /**
-     * 删除预约
+     * 删除预约（ADMIN）。
+     *
+     * <p>v2.2 联动：删除成功后清理该 appointmentId 下的所有站内通知，
+     * 避免已删除预约继续生成未来时间提醒。
+     *
+     * <p>事务：{@code @Transactional} 保证预约删除 + 通知清理尽量保持原子；
+     * 业务校验逻辑保持原样不动。
      */
+    @Transactional
     public void deleteById(Long id) {
         appointmentRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(
@@ -295,6 +307,7 @@ public class AppointmentService {
                 ));
 
         appointmentRepository.deleteById(id);
+        notificationService.deleteAllByAppointmentId(id);
     }
 
     /**
@@ -512,7 +525,10 @@ public class AppointmentService {
         appointment.setStatus(
                 AppointmentStatus.CANCELLED);
 
-        return appointmentRepository.save(appointment);
+        Appointment saved = appointmentRepository.save(appointment);
+        // v2.2 联动：取消成功后清理该预约的所有未来提醒
+        notificationService.deleteAllByAppointmentId(id);
+        return saved;
     }
 
     /**
@@ -798,6 +814,10 @@ public class AppointmentService {
         existingAppointment.setStaffId(lockedStaffId);
         // status 保持原值（不调用 setStatus）
 
-        return appointmentRepository.save(existingAppointment);
+        Appointment saved = appointmentRepository.save(existingAppointment);
+        // v2.2 联动：改期成功后清理该预约的所有未来提醒，
+        // 下次 ReminderScheduledTask 会按新 appointmentTime 重新生成
+        notificationService.deleteAllByAppointmentId(id);
+        return saved;
     }
 }

@@ -52,6 +52,25 @@
 			<view class="service-arrow">›</view>
 		</view>
 
+		<!-- 消息通知入口（v2.2 第一阶段） -->
+		<view class="card service-card" @click="goToNotifications">
+			<view class="service-left">
+				<view class="service-icon service-icon-notification">🔔</view>
+
+				<view class="service-content">
+					<view class="service-title">
+						消息通知
+						<text v-if="unreadCount > 0" class="unread-badge">
+							{{ unreadCount > 99 ? '99+' : unreadCount }}
+						</text>
+					</view>
+					<view class="service-subtitle">查看预约提醒与系统消息</view>
+				</view>
+			</view>
+
+			<view class="service-arrow">›</view>
+		</view>
+
 		<!-- 管理仪表盘入口（仅 ADMIN 可见）v1.9：原"后台管理"改名并改目标 -->
 		<view v-if="isAdminUser" class="card service-card" @click="goToDashboard">
 			<view class="service-left">
@@ -144,7 +163,9 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import { onShow } from '@dcloudio/uni-app'
 import { getMe } from '@/api/user.js'
+import { getUnreadCount } from '@/api/notification.js'
 import {
 	getCurrentUser,
 	setCurrentUser,
@@ -155,6 +176,8 @@ import {
 
 const user = ref(null)
 const loading = ref(false)
+// v2.2 第一阶段：未读通知数量
+const unreadCount = ref(0)
 
 const displayUsername = computed(() => {
 	if (user.value && user.value.username) return user.value.username
@@ -251,6 +274,29 @@ function goToMyAppointments() {
 	})
 }
 
+// v2.2 第一阶段：跳转到通知列表
+function goToNotifications() {
+	uni.navigateTo({
+		url: '/pages/notification/list'
+	})
+}
+
+// v2.2 第一阶段：刷新未读数量
+async function refreshUnreadCount() {
+	if (!isLoggedIn()) {
+		unreadCount.value = 0
+		return
+	}
+	try {
+		const r = await getUnreadCount()
+		const n = r && typeof r.count === 'number' ? r.count : 0
+		unreadCount.value = n
+	} catch (err) {
+		// 静默失败：不影响首页主功能
+		console.warn('[首页] 刷新未读数量失败', err && err.message)
+	}
+}
+
 function goToDashboard() {
 	// 前端二次校验：缓存里不是 ADMIN 直接拒绝
 	if (!isAdmin()) {
@@ -331,6 +377,12 @@ function handleLogout() {
 
 onMounted(() => {
 	ensureUser()
+	refreshUnreadCount()
+})
+
+// v2.2 第一阶段：每次进入首页刷新未读数
+onShow(() => {
+	refreshUnreadCount()
 })
 </script>
 
@@ -436,6 +488,10 @@ onMounted(() => {
 	background-color: #ecfdf5;
 }
 
+.service-icon-notification {
+	background-color: #fef3c7;
+}
+
 .service-icon-admin {
 	background-color: #fef3c7;
 }
@@ -492,6 +548,20 @@ onMounted(() => {
 	border-radius: 999rpx;
 	font-size: 24rpx;
 	font-weight: 500;
+}
+
+/* v2.2 第一阶段：未读数量角标 */
+.unread-badge {
+	display: inline-block;
+	margin-left: 12rpx;
+	padding: 2rpx 14rpx;
+	background-color: #ef4444;
+	color: #fff;
+	border-radius: 999rpx;
+	font-size: 22rpx;
+	font-weight: 600;
+	line-height: 30rpx;
+	vertical-align: middle;
 }
 
 .role-user {
