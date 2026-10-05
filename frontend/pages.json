@@ -71,6 +71,12 @@
 			"style": {
 				"navigationBarTitleText": "用户管理"
 			}
+		},
+		{
+			"path": "pages/admin/dashboard/index",
+			"style": {
+				"navigationBarTitleText": "管理仪表盘"
+			}
 		}
 	],
 	"globalStyle": {

@@ -52,14 +52,28 @@
 			<view class="service-arrow">›</view>
 		</view>
 
-		<!-- 后台管理入口（仅 ADMIN 可见） -->
-		<view v-if="isAdminUser" class="card service-card" @click="goToAdmin">
+		<!-- 管理仪表盘入口（仅 ADMIN 可见）v1.9：原"后台管理"改名并改目标 -->
+		<view v-if="isAdminUser" class="card service-card" @click="goToDashboard">
 			<view class="service-left">
-				<view class="service-icon service-icon-admin">🛠️</view>
+				<view class="service-icon service-icon-dashboard">📊</view>
 
 				<view class="service-content">
-					<view class="service-title">后台管理</view>
-					<view class="service-subtitle">管理预约与系统数据</view>
+					<view class="service-title">管理仪表盘</view>
+					<view class="service-subtitle">查看系统运行概览与统计</view>
+				</view>
+			</view>
+
+			<view class="service-arrow">›</view>
+		</view>
+
+		<!-- 预约管理入口（仅 ADMIN 可见）v1.9：原"后台管理"指向的目标 -->
+		<view v-if="isAdminUser" class="card service-card" @click="goToAppointmentAdmin">
+			<view class="service-left">
+				<view class="service-icon service-icon-appointment-admin">🗓️</view>
+
+				<view class="service-content">
+					<view class="service-title">预约管理</view>
+					<view class="service-subtitle">查看与管理全部用户预约</view>
 				</view>
 			</view>
 
@@ -237,8 +251,19 @@ function goToMyAppointments() {
 	})
 }
 
-function goToAdmin() {
-	// 前端二次校验：缓存里不是 ADMIN 直接拒绝（防止 isAdmin 与缓存不一致的边缘情况）
+function goToDashboard() {
+	// 前端二次校验：缓存里不是 ADMIN 直接拒绝
+	if (!isAdmin()) {
+		uni.showToast({ title: '无管理员权限', icon: 'none' })
+		return
+	}
+	uni.navigateTo({
+		url: '/pages/admin/dashboard/index'
+	})
+}
+
+function goToAppointmentAdmin() {
+	// 前端二次校验：缓存里不是 ADMIN 直接拒绝
 	if (!isAdmin()) {
 		uni.showToast({ title: '无管理员权限', icon: 'none' })
 		return
@@ -412,6 +437,14 @@ onMounted(() => {
 }
 
 .service-icon-admin {
+	background-color: #fef3c7;
+}
+
+.service-icon-dashboard {
+	background-color: #dbeafe;
+}
+
+.service-icon-appointment-admin {
 	background-color: #fef3c7;
 }
 
