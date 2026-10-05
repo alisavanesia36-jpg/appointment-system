@@ -15,27 +15,27 @@
 
 ### 用户侧
 
-|  登录 |  注册 | 首页（未读角标） |
-| :-: | :-: | :------: |
-|  登录 |  注册 |    首页    |
+| 登录 | 注册 | 首页（未读角标） |
+| :--: | :-: | :-: |
+| <img src="./docs/screenshots/login.png" alt="登录" width="260"> | <img src="./docs/screenshots/register.png" alt="注册" width="260"> | <img src="./docs/screenshots/home.png" alt="首页（未读角标）" width="260"> |
 
 | 服务列表 | 工作人员列表 | 创建预约（时间段选择） |
-| :--: | :----: | :---------: |
-| 服务列表 | 工作人员列表 |     创建预约    |
+| :--: | :-: | :-: |
+| <img src="./docs/screenshots/service-list.png" alt="服务列表" width="260"> | <img src="./docs/screenshots/staff-list.png" alt="工作人员列表" width="260"> | <img src="./docs/screenshots/appointment-create.png" alt="创建预约（时间段选择）" width="260"> |
 
 | 我的预约 | 预约改期 | 消息通知（v2.2） |
-| :--: | :--: | :--------: |
-| 我的预约 | 预约改期 |    消息通知    |
+| :--: | :-: | :-: |
+| <img src="./docs/screenshots/appointment-list.png" alt="我的预约" width="260"> | <img src="./docs/screenshots/appointment-reschedule.png" alt="预约改期" width="260"> | <img src="./docs/screenshots/notification-list.png" alt="消息通知（v2.2）" width="260"> |
 
 ### 管理员侧
 
 | 管理仪表盘 | 预约管理 | 服务管理 |
-| :---: | :--: | :--: |
-| 管理仪表盘 | 预约管理 | 服务管理 |
+| :--: | :-: | :-: |
+| <img src="./docs/screenshots/admin-dashboard.png" alt="管理仪表盘" width="260"> | <img src="./docs/screenshots/admin-appointment.png" alt="预约管理" width="260"> | <img src="./docs/screenshots/admin-service.png" alt="服务管理" width="260"> |
 
 | 员工管理 | 员工-服务分配 | 用户管理 |
-| :--: | :-----: | :--: |
-| 员工管理 | 员工-服务分配 | 用户管理 |
+| :--: | :-: | :-: |
+| <img src="./docs/screenshots/admin-staff.png" alt="员工管理" width="260"> | <img src="./docs/screenshots/admin-staff-service.png" alt="员工-服务分配" width="260"> | <img src="./docs/screenshots/admin-user.png" alt="用户管理" width="260"> |
 
 ---
 
