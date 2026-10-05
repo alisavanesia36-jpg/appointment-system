@@ -168,4 +168,18 @@ public class AppointmentController {
 
         return appointmentService.complete(id);
     }
+
+    // ==================== v2.0 第一阶段：可用时间段查询 ====================
+    // GET /appointments/available-slots?staffId=X&serviceId=Y&date=YYYY-MM-DD
+    // 任何登录用户可访问（沿用 SecurityConfig anyRequest().authenticated()）
+    // 返回 List<String>，例如 ["09:00","10:00","11:00",...]
+    @GetMapping("/available-slots")
+    public List<String> getAvailableSlots(
+            @RequestParam Long staffId,
+            @RequestParam Long serviceId,
+            @RequestParam String date
+    ) {
+        return appointmentService.findAvailableSlots(
+                staffId, serviceId, date);
+    }
 }

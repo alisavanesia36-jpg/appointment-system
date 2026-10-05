@@ -11,7 +11,11 @@ import com.example.appointmentsystem.repository.StaffRepository;
 import com.example.appointmentsystem.repository.StaffServiceMappingRepository;
 import com.example.appointmentsystem.repository.UserRepository;
 
+import java.time.Clock;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.web.server.ResponseStatusException;
@@ -21,6 +25,14 @@ import com.example.appointmentsystem.exception.BusinessException;
 
 @org.springframework.stereotype.Service
 public class AppointmentService {
+
+    // ==================== v2.0 新增：可注入时钟（用于单元测试控制"当前时间"） ====================
+    /**
+     * 默认使用系统时钟。测试可通过
+     *   ReflectionTestUtils.setField(service, "clock", Clock.fixed(...))
+     * 注入固定时钟，以稳定测试"过期 slot 过滤"行为，不依赖运行机器的真实时间。
+     */
+    private Clock clock = Clock.systemDefaultZone();
 
     private final AppointmentRepository appointmentRepository;
     private final ServiceRepository serviceRepository;
@@ -527,5 +539,109 @@ public class AppointmentService {
                 AppointmentStatus.COMPLETED);
 
         return appointmentRepository.save(appointment);
+    }
+
+    // ==================== v2.0 第一阶段：可用时间段查询 ====================
+
+    /**
+     * 计算某员工在指定日期内、给定服务时长下，所有"可预约起始时间"（HH:mm 字符串列表）。
+     *
+     * 业务规则：
+     * 1. 员工必须存在
+     * 2. 服务必须存在
+     * 3. 员工必须支持该服务
+     * 4. 营业时间 09:00–18:00，按 service.duration 切片
+     * 5. 跳过与已有非 CANCELLED 预约重叠的 slot
+     * 6. 跳过早于当前时间的 slot
+     *
+     * 注意：此处只复验"岗位 / 时长"等基础规则；POST /appointments 仍会跑 save() 全部校验，
+     * 前端绕过 available-slots 直接提交也会被 save() 拦截。
+     */
+    public List<String> findAvailableSlots(
+            Long staffId,
+            Long serviceId,
+            String date
+    ) {
+        // 1. 员工必须存在
+        staffRepository.findById(staffId)
+                .orElseThrow(() ->
+                        new BusinessException("员工不存在"));
+
+        // 2. 服务必须存在
+        Service service = serviceRepository.findById(serviceId)
+                .orElseThrow(() ->
+                        new BusinessException("服务不存在"));
+
+        // 3. 员工是否支持该服务
+        boolean canProvide = staffServiceMappingRepository
+                .existsByIdStaffIdAndIdServiceId(staffId, serviceId);
+        if (!canProvide) {
+            throw new BusinessException("该员工不支持此服务");
+        }
+
+        // 4. duration 来自 service —— 客户端不可信
+        Integer duration = service.getDuration();
+        if (duration == null || duration <= 0) {
+            throw new BusinessException("服务时长不合法");
+        }
+
+        // 5. 解析日期 + 计算营业时段
+        LocalDate targetDate = LocalDate.parse(date);
+        LocalDateTime businessStart = targetDate.atTime(9, 0);
+        LocalDateTime businessEnd = targetDate.atTime(18, 0);
+
+        // 6. 查询当天该员工所有非 CANCELLED 预约（限定一天内，性能更优）
+        List<Appointment> existing = appointmentRepository
+                .findByStaffIdAndAppointmentTimeBetweenAndStatusNot(
+                        staffId,
+                        businessStart,
+                        businessEnd,
+                        AppointmentStatus.CANCELLED
+                );
+
+        // 7. 计算已有预约的 [start, end) 区间列表
+        List<LocalDateTime[]> busyIntervals = new ArrayList<>();
+        for (Appointment a : existing) {
+            Service aService = serviceRepository.findById(a.getServiceId())
+                    .orElseThrow(() ->
+                            new BusinessException("服务不存在"));
+            LocalDateTime aStart = a.getAppointmentTime();
+            LocalDateTime aEnd = aStart.plusMinutes(aService.getDuration());
+            busyIntervals.add(new LocalDateTime[]{aStart, aEnd});
+        }
+
+        // 8. 按 duration 切片生成 slot
+        DateTimeFormatter hhmm = DateTimeFormatter.ofPattern("HH:mm");
+        LocalDateTime now = LocalDateTime.now(clock);
+        LocalDateTime lastStart = businessEnd.minusMinutes(duration);
+
+        List<String> result = new ArrayList<>();
+        for (LocalDateTime slot = businessStart;
+             !slot.isAfter(lastStart);
+             slot = slot.plusMinutes(duration)) {
+
+            // 8a. 跳过已过期
+            if (!slot.isAfter(now)) {
+                continue;
+            }
+
+            // 8b. 跳过重叠
+            LocalDateTime slotEnd = slot.plusMinutes(duration);
+            boolean overlap = false;
+            for (LocalDateTime[] b : busyIntervals) {
+                if (slot.isBefore(b[1]) && slotEnd.isAfter(b[0])) {
+                    overlap = true;
+                    break;
+                }
+            }
+            if (overlap) {
+                continue;
+            }
+
+            // 8c. 通过校验 → 加入
+            result.add(slot.format(hhmm));
+        }
+
+        return result;
     }
 }

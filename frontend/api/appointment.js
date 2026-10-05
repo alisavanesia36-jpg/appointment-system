@@ -65,6 +65,19 @@ export function deleteAppointment(id) {
   return http.delete(`/appointments/${id}`)
 }
 
+// ==================== v2.0 第一阶段：可用时间段查询 ====================
+// 查询某员工在指定服务 + 日期下的可预约起始时间（HH:mm 字符串列表）
+// GET /appointments/available-slots?staffId=X&serviceId=Y&date=YYYY-MM-DD
+// 注意：duration 由后端从 service 表读取，前端不可信、也不应传
+// 任何已登录用户可访问
+export function getAvailableSlots(staffId, serviceId, date) {
+  return http.get('/appointments/available-slots', {
+    staffId,
+    serviceId,
+    date
+  })
+}
+
 export default {
   // 用户侧
   createAppointment,
@@ -75,5 +88,7 @@ export default {
   getAppointmentsByStatus,
   confirmAppointment,
   completeAppointment,
-  deleteAppointment
+  deleteAppointment,
+  // v2.0
+  getAvailableSlots
 }

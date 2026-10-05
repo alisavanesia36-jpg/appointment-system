@@ -39,4 +39,12 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
             LocalDateTime start,
             LocalDateTime end
     );
+
+    // v2.0: 按员工 + 时间区间 + 排除某状态查询（available-slots 端点用）
+    List<Appointment> findByStaffIdAndAppointmentTimeBetweenAndStatusNot(
+            Long staffId,
+            LocalDateTime start,
+            LocalDateTime end,
+            AppointmentStatus status
+    );
 }

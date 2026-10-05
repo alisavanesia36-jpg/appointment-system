@@ -2,7 +2,7 @@
   <view class="page">
     <view class="header">
       <view class="title">确认预约</view>
-      <view class="subtitle">填写预约信息后提交</view>
+      <view class="subtitle">选择日期与可预约时间</view>
     </view>
 
     <view class="card">
@@ -22,7 +22,7 @@
     </view>
 
     <view class="card">
-      <view class="card-title">预约时间</view>
+      <view class="card-title">预约日期</view>
 
       <view class="form-item">
         <view class="form-label">日期</view>
@@ -36,21 +36,38 @@
           <view class="picker">{{ dateValue || '请选择日期' }}</view>
         </picker>
       </view>
+    </view>
 
-      <view class="form-item">
-        <view class="form-label">时间</view>
-        <picker
-          mode="time"
-          :value="timeValue"
-          start="09:00"
-          end="18:00"
-          @change="onTimeChange"
-        >
-          <view class="picker">{{ timeValue || '请选择时间' }}</view>
-        </picker>
+    <view class="card">
+      <view class="card-title">可预约时间</view>
+
+      <view v-if="loadingSlots" class="slots-state">
+        <text>正在加载可预约时间...</text>
       </view>
 
-      <view v-if="timeHint" class="time-hint">{{ timeHint }}</view>
+      <view v-else-if="errorSlots" class="slots-state slots-error">
+        <text>{{ errorSlots }}</text>
+        <button class="retry-btn" @click="loadAvailableSlots">重新加载</button>
+      </view>
+
+      <view v-else-if="availableSlots.length === 0" class="slots-state">
+        <text>当天没有可预约时段，请选择其他日期</text>
+      </view>
+
+      <view v-else class="slot-grid">
+        <view
+          v-for="slot in availableSlots"
+          :key="slot"
+          :class="['slot-btn', selectedSlot === slot ? 'slot-btn-active' : '']"
+          @click="onSelectSlot(slot)"
+        >
+          {{ slot }}
+        </view>
+      </view>
+    </view>
+
+    <view v-if="timeHint" class="hint-bar">
+      {{ timeHint }}
     </view>
 
     <view class="actions">
@@ -68,7 +85,7 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { onLoad } from '@dcloudio/uni-app'
-import { createAppointment } from '@/api/appointment.js'
+import { createAppointment, getAvailableSlots } from '@/api/appointment.js'
 import { getCurrentUser } from '@/utils/auth.js'
 
 const serviceId = ref(null)
@@ -77,7 +94,10 @@ const staffId = ref(null)
 const staffName = ref('')
 
 const dateValue = ref('')
-const timeValue = ref('')
+const selectedSlot = ref('')
+const availableSlots = ref([])
+const loadingSlots = ref(false)
+const errorSlots = ref('')
 const loading = ref(false)
 const errorMessage = ref('')
 
@@ -97,7 +117,7 @@ const canSubmit = computed(() => {
     staffId.value !== undefined &&
     staffId.value !== '' &&
     !!dateValue.value &&
-    !!timeValue.value
+    !!selectedSlot.value
   )
 })
 
@@ -113,31 +133,45 @@ function formatDate(d) {
   return `${y}-${m}-${day}`
 }
 
-function pad(n) {
-  return String(n).padStart(2, '0')
-}
-
-function formatLocalDateTime(dateStr, timeStr) {
-  // dateStr: 'YYYY-MM-DD' timeStr: 'HH:mm'
-  // 输出 'YYYY-MM-DDTHH:mm:00' 供 Jackson 反序列化为 LocalDateTime
-  return `${dateStr}T${timeStr}:00`
-}
-
-function onDateChange(e) {
-  dateValue.value = e.detail.value
-  errorMessage.value = ''
-}
-
-function onTimeChange(e) {
-  timeValue.value = e.detail.value
-  errorMessage.value = ''
-}
-
 function showToast(msg) {
   uni.showToast({
     title: msg,
     icon: 'none'
   })
+}
+
+async function loadAvailableSlots() {
+  if (!staffId.value || !serviceId.value || !dateValue.value) return
+
+  loadingSlots.value = true
+  errorSlots.value = ''
+  availableSlots.value = []
+  selectedSlot.value = ''
+
+  try {
+    const list = await getAvailableSlots(
+      Number(staffId.value),
+      Number(serviceId.value),
+      dateValue.value
+    )
+    availableSlots.value = Array.isArray(list) ? list : []
+  } catch (err) {
+    console.error('[appointment/create] 加载可用时间失败：', err)
+    errorSlots.value = (err && err.message) || '可用时间加载失败，请稍后重试'
+  } finally {
+    loadingSlots.value = false
+  }
+}
+
+function onDateChange(e) {
+  dateValue.value = e.detail.value
+  errorMessage.value = ''
+  loadAvailableSlots()
+}
+
+function onSelectSlot(slot) {
+  selectedSlot.value = slot
+  errorMessage.value = ''
 }
 
 async function handleSubmit() {
@@ -156,17 +190,8 @@ async function handleSubmit() {
     return
   }
 
-  // 客户端基础校验：时间不能早于当前
-  const appointmentTime = formatLocalDateTime(dateValue.value, timeValue.value)
-  const appointmentDate = new Date(appointmentTime)
-  if (Number.isNaN(appointmentDate.getTime())) {
-    showToast('时间格式错误')
-    return
-  }
-  if (appointmentDate.getTime() < Date.now() - 60 * 1000) {
-    showToast('预约时间不能早于当前时间')
-    return
-  }
+  // 后端是最后防线 —— 这里仍调原 createAppointment，请求体结构不变
+  const appointmentTime = `${dateValue.value}T${selectedSlot.value}:00`
 
   loading.value = true
   errorMessage.value = ''
@@ -233,7 +258,12 @@ onLoad((options) => {
         url: '/pages/service/list'
       })
     }, 800)
+    return
   }
+
+  // 默认日期 = 今天，并立刻加载可用时间段
+  dateValue.value = formatDate(new Date())
+  loadAvailableSlots()
 })
 </script>
 
@@ -322,10 +352,65 @@ onLoad((options) => {
   line-height: 44rpx;
 }
 
-.time-hint {
-  margin-top: 16rpx;
-  font-size: 24rpx;
+.slots-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60rpx 0;
+  color: #999;
+  font-size: 26rpx;
+  text-align: center;
+}
+
+.slots-error {
   color: #d9534f;
+}
+
+.retry-btn {
+  margin-top: 20rpx;
+  padding: 0 36rpx;
+  font-size: 26rpx;
+  line-height: 64rpx;
+  background: #fff;
+  color: #333;
+  border: 1rpx solid #ddd;
+  border-radius: 12rpx;
+}
+
+.slot-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16rpx;
+}
+
+.slot-btn {
+  flex: 0 0 calc((100% - 48rpx) / 4);
+  box-sizing: border-box;
+  text-align: center;
+  padding: 18rpx 0;
+  background: #fff;
+  color: #3b82f6;
+  border: 2rpx solid #bfdbfe;
+  border-radius: 12rpx;
+  font-size: 28rpx;
+  font-weight: 500;
+  line-height: 1;
+}
+
+.slot-btn-active {
+  background: #3b82f6;
+  color: #ffffff;
+  border-color: #3b82f6;
+}
+
+.hint-bar {
+  margin: 0 32rpx 24rpx;
+  padding: 16rpx 24rpx;
+  background: #fef2f2;
+  color: #b91c1c;
+  font-size: 24rpx;
+  border-radius: 12rpx;
 }
 
 .actions {
