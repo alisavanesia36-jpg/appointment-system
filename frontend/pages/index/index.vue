@@ -52,6 +52,20 @@
 			<view class="service-arrow">›</view>
 		</view>
 
+		<!-- 后台管理入口（仅 ADMIN 可见） -->
+		<view v-if="isAdminUser" class="card service-card" @click="goToAdmin">
+			<view class="service-left">
+				<view class="service-icon service-icon-admin">🛠️</view>
+
+				<view class="service-content">
+					<view class="service-title">后台管理</view>
+					<view class="service-subtitle">管理预约与系统数据</view>
+				</view>
+			</view>
+
+			<view class="service-arrow">›</view>
+		</view>
+
 		<view class="actions">
 			<button class="btn-logout" @click="handleLogout">退出登录</button>
 		</view>
@@ -65,6 +79,7 @@ import {
 	getCurrentUser,
 	setCurrentUser,
 	isLoggedIn,
+	isAdmin,
 	logout as authLogout
 } from '@/utils/auth.js'
 
@@ -119,6 +134,13 @@ const roleClass = computed(() => {
 	return r === 'ADMIN' ? 'role-admin' : 'role-user'
 })
 
+// v1.6 后台管理入口控制：仅 ADMIN 显示
+const isAdminUser = computed(() => {
+	const u = user.value || getCurrentUser()
+	if (!u || !u.role) return false
+	return String(u.role).toUpperCase() === 'ADMIN'
+})
+
 async function ensureUser() {
 	if (!isLoggedIn()) {
 		authLogout(true)
@@ -156,6 +178,17 @@ function goToServices() {
 function goToMyAppointments() {
 	uni.navigateTo({
 		url: '/pages/appointment/list'
+	})
+}
+
+function goToAdmin() {
+	// 前端二次校验：缓存里不是 ADMIN 直接拒绝（防止 isAdmin 与缓存不一致的边缘情况）
+	if (!isAdmin()) {
+		uni.showToast({ title: '无管理员权限', icon: 'none' })
+		return
+	}
+	uni.navigateTo({
+		url: '/pages/admin/appointment/list'
 	})
 }
 
@@ -276,6 +309,10 @@ onMounted(() => {
 
 .service-icon-my {
 	background-color: #ecfdf5;
+}
+
+.service-icon-admin {
+	background-color: #fef3c7;
 }
 
 .service-content {

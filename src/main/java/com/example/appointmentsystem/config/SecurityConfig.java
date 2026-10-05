@@ -55,12 +55,19 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.PUT, "/users/*").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/users/*").hasRole("ADMIN")
                         .anyRequest().authenticated())
-                .exceptionHandling(ex -> ex.authenticationEntryPoint(
-                        (request, response, authException) -> {
-                            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                            response.setContentType("application/json;charset=UTF-8");
-                            response.getWriter().write("{\"message\":\"未认证或 token 无效\"}");
-                        }))
+                .exceptionHandling(ex -> ex
+                        .authenticationEntryPoint(
+                                (request, response, authException) -> {
+                                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                                    response.setContentType("application/json;charset=UTF-8");
+                                    response.getWriter().write("{\"message\":\"未认证或 token 无效\"}");
+                                })
+                        .accessDeniedHandler(
+                                (request, response, accessDeniedException) -> {
+                                    response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                                    response.setContentType("application/json;charset=UTF-8");
+                                    response.getWriter().write("{\"message\":\"权限不足\"}");
+                                }))
                 .addFilterBefore(jwtAuthenticationFilter,
                         UsernamePasswordAuthenticationFilter.class);
 

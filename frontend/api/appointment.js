@@ -1,5 +1,7 @@
 import http from '@/utils/request.js'
 
+// ==================== 用户侧预约 API ====================
+
 // 创建预约
 // POST /appointments
 // 请求体：{ userId, serviceId, staffId, appointmentTime }
@@ -25,8 +27,53 @@ export function cancelAppointment(id) {
   return http.put(`/appointments/${id}/cancel`)
 }
 
+// ==================== 管理员侧预约 API ====================
+// 全部接口后端已经限制仅 ADMIN 访问（v1.5 第一阶段加固）。
+// 前端在 /pages/admin/appointment/list.vue 中以管理员角色调用。
+
+// 查询全部预约（仅 ADMIN）
+// GET /appointments
+// 返回 List<Appointment>，结构与 /appointments/my 一致。
+export function getAllAppointments() {
+  return http.get('/appointments')
+}
+
+// 按状态查询预约（仅 ADMIN）
+// GET /appointments/status/{status}
+// status 取值：PENDING / CONFIRMED / CANCELLED / COMPLETED
+export function getAppointmentsByStatus(status) {
+  return http.get(`/appointments/status/${status}`)
+}
+
+// 管理员确认预约（仅 ADMIN）
+// PUT /appointments/{id}/confirm
+// 后端校验：仅 PENDING 可被确认 → CONFIRMED
+export function confirmAppointment(id) {
+  return http.put(`/appointments/${id}/confirm`)
+}
+
+// 管理员完成预约（仅 ADMIN）
+// PUT /appointments/{id}/complete
+// 后端校验：仅 CONFIRMED 可被完成 → COMPLETED
+export function completeAppointment(id) {
+  return http.put(`/appointments/${id}/complete`)
+}
+
+// 管理员删除预约（仅 ADMIN）
+// DELETE /appointments/{id}
+export function deleteAppointment(id) {
+  return http.delete(`/appointments/${id}`)
+}
+
 export default {
+  // 用户侧
   createAppointment,
   getMyAppointments,
-  cancelAppointment
+  cancelAppointment,
+  // 管理员侧
+  getAllAppointments,
+  getAppointmentsByStatus,
+  confirmAppointment,
+  completeAppointment,
+  deleteAppointment
 }
